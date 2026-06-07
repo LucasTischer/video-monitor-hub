@@ -1,4 +1,9 @@
 <x-guest-layout>
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">{{ __('Create your VMHub account') }}</h1>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ __('Start managing camera streams and motion recordings from a private dashboard.') }}</p>
+    </div>
+
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
@@ -39,12 +44,12 @@
             <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}">
+        <div class="mt-6 flex items-center justify-between gap-4">
+            <a class="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" href="{{ route('login') }}">
                 {{ __('Already registered?') }}
             </a>
 
-            <x-primary-button class="ms-4">
+            <x-primary-button>
                 {{ __('Register') }}
             </x-primary-button>
         </div>

@@ -1,4 +1,9 @@
 <x-guest-layout>
+    <div class="mb-6">
+        <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">{{ __('Log in to VMHub') }}</h1>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ __('Review cameras, recordings, and processor activity from your monitoring dashboard.') }}</p>
+    </div>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
@@ -32,16 +37,21 @@
             </label>
         </div>
 
-        <div class="flex items-center justify-end mt-4">
+        <div class="mt-6 flex items-center justify-between gap-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('password.request') }}">
+                <a class="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" href="{{ route('password.request') }}">
                     {{ __('Forgot your password?') }}
                 </a>
             @endif
 
-            <x-primary-button class="ms-3">
+            <x-primary-button>
                 {{ __('Log in') }}
             </x-primary-button>
         </div>
+
+        <p class="mt-6 text-sm text-slate-600 dark:text-slate-400">
+            {{ __('New to VMHub?') }}
+            <a href="{{ route('register') }}" class="font-medium text-cyan-700 hover:text-cyan-900 dark:text-cyan-300 dark:hover:text-cyan-200">{{ __('Create an account') }}</a>
+        </p>
     </form>
 </x-guest-layout>
