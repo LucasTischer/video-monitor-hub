@@ -24,6 +24,7 @@ if [ ! -f .env ] && [ -f .env.example ]; then
     set_env_value "DB_DATABASE" "video_monitor"
     set_env_value "DB_USERNAME" "postgres"
     set_env_value "DB_PASSWORD" "secret"
+    set_env_value "PROCESSOR_API_TOKEN" "local-dev-processor-token"
 fi
 
 if [ ! -f vendor/autoload.php ]; then
@@ -36,6 +37,10 @@ fi
 
 if [ -d storage ] && [ -d bootstrap/cache ]; then
     chown -R www-data:www-data storage bootstrap/cache
+fi
+
+if [ -f artisan ] && [ ! -L public/storage ]; then
+    php artisan storage:link
 fi
 
 if [ -f package.json ] && [ ! -f node_modules/.bin/vite ]; then

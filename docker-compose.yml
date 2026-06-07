@@ -9,9 +9,11 @@ services:
       - ./laravel-app:/var/www/html
       - laravel-vendor:/var/www/html/vendor
       - laravel-node-modules:/var/www/html/node_modules
+      - shared-videos:/var/www/html/storage/app/public/videos
     ports:
       - "8000:80"
     environment:
+      PROCESSOR_API_TOKEN: ${PROCESSOR_API_TOKEN:-local-dev-processor-token}
       XDEBUG_MODE: ${XDEBUG_MODE:-debug,develop}
       XDEBUG_START_WITH_REQUEST: ${XDEBUG_START_WITH_REQUEST:-yes}
       XDEBUG_CLIENT_HOST: ${XDEBUG_CLIENT_HOST:-host.docker.internal}
@@ -27,10 +29,16 @@ services:
     build: ./python-processor
     container_name: monitor_python
     restart: always  #Auto-Restart
+    environment:
+      PROCESSOR_API_BASE_URL: http://laravel-app/api
+      PROCESSOR_API_TOKEN: ${PROCESSOR_API_TOKEN:-local-dev-processor-token}
+      PROCESSOR_CAMERA_URL: ${PROCESSOR_CAMERA_URL:-}
+      PROCESSOR_OUTPUT_DIR: /app/storage/videos
     volumes:
       - ./python-processor:/app
       - shared-videos:/app/storage/videos
     depends_on:
+      - laravel-app
       - database
 
   # 3. Postgres Database
@@ -55,4 +63,4 @@ volumes:
   db-data:
   laravel-vendor:
   laravel-node-modules:
-  shared-videos: # Tethers the Python output directory to the Laravel storage
+  shared-videos: # Shares Python recordings with Laravel public storage

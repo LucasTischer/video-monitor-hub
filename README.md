@@ -36,6 +36,7 @@ On first startup, the Laravel container prepares the application runtime by:
 - applying Docker database defaults to that new `.env`;
 - installing Composer dependencies into a Docker volume;
 - generating `APP_KEY` when needed;
+- creating Laravel's `public/storage` link when needed;
 - installing Node dependencies into a Docker volume;
 - building the Vite frontend assets when needed.
 
@@ -87,6 +88,42 @@ To disable Xdebug temporarily:
 
 ```bash
 XDEBUG_MODE=off docker compose up -d --build laravel-app
+```
+
+## Python Motion Processor
+
+The Python processor connects to Laravel through internal API endpoints. Docker gives both containers the same `PROCESSOR_API_TOKEN`, so the processor can:
+
+- request active cameras from `GET /api/processor/cameras`;
+- process each camera stream with OpenCV;
+- write finished clips to the shared recordings volume;
+- register each saved recording through `POST /api/processor/videos`.
+
+The shared recordings volume is mounted at:
+
+```text
+python-processor: /app/storage/videos
+laravel-app:      /var/www/html/storage/app/public/videos
+```
+
+Laravel serves those files through the standard public storage URL:
+
+```text
+/storage/videos/{filename}
+```
+
+The Python processor can still run without a configured stream. In that mode it stays alive and waits for active cameras from Laravel.
+
+To test one camera stream manually, provide `PROCESSOR_CAMERA_URL` when starting the stack:
+
+```bash
+PROCESSOR_CAMERA_URL=http://example-camera.local/video docker compose up -d --build python-processor
+```
+
+Recorded motion clips are written inside the Python container to:
+
+```text
+/app/storage/videos
 ```
 
 To reset the database during development, remove the database volume and run migrations again:

@@ -5,7 +5,7 @@
 Video Monitor Hub is designed to help users manage camera streams and review videos recorded when motion is detected. The system has two main parts:
 
 - A Laravel web application for authentication, camera management, update listing, and video playback.
-- A Python processor that uses OpenCV to detect motion, record videos, and register video updates in the database.
+- A Python processor that uses OpenCV to detect motion, record videos, and register video updates through Laravel's processor API.
 
 ## System Components
 
@@ -27,7 +27,7 @@ laravel-app/
 
 ### Python Processor
 
-The Python processor is responsible for camera stream processing. It should retrieve camera records from the database, connect to each camera access URL, detect motion, save video recordings, and create update logs.
+The Python processor is responsible for camera stream processing. It retrieves active camera records from Laravel's internal API, connects to each camera stream URL, detects motion, saves video recordings, and posts saved recording metadata back to Laravel.
 
 Current location:
 
@@ -39,9 +39,19 @@ Declared Python dependencies:
 
 ```text
 opencv-python-headless
+numpy
 psycopg2-binary
+pytest
 requests
 ```
+
+Current Python modules:
+
+- `motion.clip_writer`: buffered clip writing based on the old `KeyClipWriter` prototype.
+- `motion.detector`: frame comparison and motion detection.
+- `motion.stream_processor`: one-stream orchestration that combines detection and clip writing.
+- `services.laravel_api`: small HTTP client for the Laravel processor API.
+- `monitor.py`: container entry point that fetches active Laravel cameras, processes streams, and can still process one manual stream through `PROCESSOR_CAMERA_URL`.
 
 ### Database
 
@@ -125,7 +135,7 @@ The motion detection script should run on the user's computer or in the Python p
 
 Expected processing flow:
 
-1. Retrieve registered camera data from the database.
+1. Retrieve active camera data from Laravel through `GET /api/processor/cameras`.
 2. Open each camera stream using its access URL.
 3. Capture frames continuously.
 4. Resize each frame to 720 pixels.
@@ -146,7 +156,7 @@ Expected recording flow:
 2. Continue recording while motion is present.
 3. Stop recording only after no movement is detected for the configured number of frames.
 4. Save the video file in the directory configured for the camera.
-5. Insert a new update log in the database.
+5. Register the recording in Laravel through `POST /api/processor/videos`.
 6. Store the update date, description, local video path, and uploaded server path when applicable.
 
 ## Docker Services
@@ -177,6 +187,21 @@ docker compose exec laravel-app php artisan migrate
 ```
 
 The shared Docker volume `shared-videos` is intended to connect generated Python recordings with storage accessible by the Laravel application.
+
+The current integration flow is:
+
+1. Laravel exposes active cameras at `GET /api/processor/cameras`.
+2. The Python processor calls that endpoint using the shared `PROCESSOR_API_TOKEN`.
+3. Python writes finished clips to `/app/storage/videos`.
+4. Docker mounts that same volume into Laravel at `storage/app/public/videos`.
+5. Python registers the clip metadata with `POST /api/processor/videos`.
+6. Laravel stores a `videos` row containing the camera, filename, public path, timestamps, duration, and metadata.
+
+The public video path stored in the database uses the Laravel storage symlink:
+
+```text
+/storage/videos/{filename}
+```
 
 ### Local Debugging
 
@@ -233,4 +258,4 @@ Implemented Laravel screens:
 - Authenticated video recording list/detail screens.
 - Video recording delete action with user ownership checks.
 
-Camera/update seed data, Python-to-Laravel video creation, stored video file serving, and full OpenCV motion detection implementation should be added to match the functional requirements above.
+Camera/update seed data, stored video playback polish, and real camera-stream end-to-end testing should be added to match the full functional requirements above.
