@@ -25,6 +25,7 @@ RUN apt-get update \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/laravel/xdebug.ini /usr/local/etc/php/conf.d/99-xdebug.ini
+COPY docker/laravel/ensure-test-database.php /usr/local/bin/ensure-test-database.php
 COPY docker/laravel/entrypoint.sh /usr/local/bin/laravel-entrypoint
 
 RUN chmod +x /usr/local/bin/laravel-entrypoint

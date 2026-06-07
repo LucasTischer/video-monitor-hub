@@ -24,7 +24,12 @@ if [ ! -f .env ] && [ -f .env.example ]; then
     set_env_value "DB_DATABASE" "video_monitor"
     set_env_value "DB_USERNAME" "postgres"
     set_env_value "DB_PASSWORD" "secret"
+    set_env_value "DB_TEST_DATABASE" "video_monitor_test"
     set_env_value "PROCESSOR_API_TOKEN" "local-dev-processor-token"
+fi
+
+if [ -f /usr/local/bin/ensure-test-database.php ]; then
+    php /usr/local/bin/ensure-test-database.php
 fi
 
 if [ ! -f vendor/autoload.php ]; then
