@@ -61,7 +61,7 @@ def test_stream_processor_starts_recording_when_motion_is_detected(tmp_path):
     assert saved_clip is None
     assert clip_writer.recording is True
     assert len(clip_writer.started_paths) == 1
-    assert clip_writer.started_paths[0].endswith(".avi")
+    assert clip_writer.started_paths[0].endswith(".webm")
 
 
 def test_stream_processor_finishes_after_configured_quiet_frames(tmp_path):
@@ -80,9 +80,24 @@ def test_stream_processor_finishes_after_configured_quiet_frames(tmp_path):
     saved_clip = processor.process_frame(make_frame())
 
     assert saved_clip is not None
-    assert saved_clip.output_path.suffix == ".avi"
+    assert saved_clip.output_path.suffix == ".webm"
     assert clip_writer.recording is False
     assert clip_writer.finish_count == 1
+
+
+def test_stream_processor_can_use_a_custom_output_extension(tmp_path):
+    clip_writer = FakeClipWriter()
+    processor = StreamProcessor(
+        stream_url="http://camera.local/video",
+        output_directory=tmp_path,
+        detector=FakeDetector([True]),
+        clip_writer=clip_writer,
+        output_extension="avi",
+    )
+
+    processor.process_frame(make_frame())
+
+    assert clip_writer.started_paths[0].endswith(".avi")
 
 
 def test_stream_processor_does_not_record_without_motion(tmp_path):

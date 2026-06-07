@@ -25,7 +25,8 @@ class StreamProcessor:
         output_directory: str | Path,
         detector: MotionDetector | None = None,
         clip_writer: ClipWriter | None = None,
-        codec: str = "MJPG",
+        codec: str = "VP80",
+        output_extension: str = "webm",
         fps: int = 20,
         quiet_frames_to_stop: int = 32,
         capture_factory=cv2.VideoCapture,
@@ -35,6 +36,7 @@ class StreamProcessor:
         self.detector = detector or MotionDetector()
         self.clip_writer = clip_writer or ClipWriter(buffer_size=quiet_frames_to_stop)
         self.codec = codec
+        self.output_extension = output_extension.lstrip(".")
         self.fps = fps
         self.quiet_frames_to_stop = quiet_frames_to_stop
         self.capture_factory = capture_factory
@@ -86,7 +88,7 @@ class StreamProcessor:
     def start_recording(self) -> Path:
         self.output_directory.mkdir(parents=True, exist_ok=True)
         self.recording_started_at = dt.datetime.now()
-        output_path = self.output_directory / f"{self.recording_started_at:%Y%m%d-%H%M%S}.avi"
+        output_path = self.output_directory / f"{self.recording_started_at:%Y%m%d-%H%M%S}.{self.output_extension}"
         fourcc = cv2.VideoWriter_fourcc(*self.codec)
 
         self.current_output_path = output_path

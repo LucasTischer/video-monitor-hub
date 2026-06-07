@@ -12,18 +12,33 @@
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            @php
+                $videoType = match (strtolower(pathinfo($video->path, PATHINFO_EXTENSION))) {
+                    'webm' => 'video/webm',
+                    'mp4' => 'video/mp4',
+                    'avi' => 'video/x-msvideo',
+                    default => null,
+                };
+            @endphp
+
             <div class="grid gap-6 lg:grid-cols-3">
                 <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg lg:col-span-2">
                     <div class="p-6">
                         <div class="overflow-hidden rounded-lg bg-black">
                             <video controls class="aspect-video w-full">
-                                <source src="{{ $video->path }}">
+                                <source src="{{ $video->path }}" @if ($videoType) type="{{ $videoType }}" @endif>
                                 {{ __('Your browser does not support the video element.') }}
                             </video>
                         </div>
 
                         <p class="mt-4 break-all text-sm text-gray-600 dark:text-gray-300">
                             {{ __('File path:') }} {{ $video->path }}
+                        </p>
+
+                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                            <a href="{{ $video->path }}" download class="font-medium text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                {{ __('Download recording') }}
+                            </a>
                         </p>
                     </div>
                 </div>
