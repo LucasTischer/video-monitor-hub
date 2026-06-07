@@ -1,0 +1,30 @@
+# Local environment files
+.env
+*.env
+!.env.example
+laravel-app/.env
+
+# Dependency folders
+laravel-app/vendor/
+laravel-app/node_modules/
+python-processor/.venv/
+python-processor/venv/
+
+# Build and cache output
+laravel-app/public/build/
+laravel-app/public/hot
+laravel-app/storage/logs/*.log
+laravel-app/bootstrap/cache/*.php
+__pycache__/
+*.py[cod]
+
+# Local editor and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Local tool state
+.phpunit.cache/
+laravel-app/.phpunit.cache/
+laravel-app/.phpunit.result.cache

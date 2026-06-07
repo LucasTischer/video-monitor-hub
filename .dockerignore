@@ -1,0 +1,8 @@
+.git
+.agents
+.codex
+laravel-app/.env
+laravel-app/node_modules
+laravel-app/vendor
+laravel-app/storage/logs/*
+laravel-app/bootstrap/cache/*

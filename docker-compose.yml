@@ -1,0 +1,51 @@
+services:
+  # 1. Laravel Application Server
+  laravel-app:
+    build:
+      context: .
+      dockerfile: docker/laravel/Dockerfile
+    container_name: monitor_laravel
+    volumes:
+      - ./laravel-app:/var/www/html
+      - laravel-vendor:/var/www/html/vendor
+      - laravel-node-modules:/var/www/html/node_modules
+    ports:
+      - "8000:80"
+    depends_on:
+      database:
+        condition: service_healthy
+
+  # 2. Python Video Processor
+  python-processor:
+    build: ./python-processor
+    container_name: monitor_python
+    restart: always  #Auto-Restart
+    volumes:
+      - ./python-processor:/app
+      - shared-videos:/app/storage/videos
+    depends_on:
+      - database
+
+  # 3. Postgres Database
+  database:
+    image: postgres:16
+    container_name: monitor_db
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret}
+      POSTGRES_DB: ${DB_DATABASE:-video_monitor}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  db-data:
+  laravel-vendor:
+  laravel-node-modules:
+  shared-videos: # Tethers the Python output directory to the Laravel storage

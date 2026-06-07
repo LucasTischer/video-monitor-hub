@@ -1,0 +1,47 @@
+<?php
+
+use App\Models\Camera;
+use App\Models\User;
+use App\Models\Video;
+
+test('guests are redirected away from the dashboard', function () {
+    $this->get('/dashboard')
+        ->assertRedirect('/login');
+});
+
+test('dashboard displays the authenticated users cameras and videos', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    $camera = Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Front Gate',
+        'stream_url' => 'http://camera.local/front',
+        'location' => 'Entrance',
+        'is_active' => true,
+    ]);
+
+    Camera::create([
+        'user_id' => $otherUser->id,
+        'name' => 'Private Office',
+        'stream_url' => 'http://camera.local/private',
+        'location' => 'Office',
+        'is_active' => true,
+    ]);
+
+    Video::create([
+        'camera_id' => $camera->id,
+        'filename' => 'front-gate-motion.mp4',
+        'path' => 'videos/front-gate-motion.mp4',
+        'started_at' => now(),
+        'duration_seconds' => 12,
+    ]);
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSee('Front Gate')
+        ->assertSee('Entrance')
+        ->assertSee('front-gate-motion.mp4')
+        ->assertDontSee('Private Office');
+});
