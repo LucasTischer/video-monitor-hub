@@ -35,6 +35,7 @@ services:
       PROCESSOR_API_TOKEN: ${PROCESSOR_API_TOKEN:-local-dev-processor-token}
       PROCESSOR_CAMERA_URL: ${PROCESSOR_CAMERA_URL:-}
       PROCESSOR_OUTPUT_DIR: /app/storage/videos
+      PROCESSOR_REFRESH_SECONDS: ${PROCESSOR_REFRESH_SECONDS:-10}
     volumes:
       - ./python-processor:/app
       - shared-videos:/app/storage/videos

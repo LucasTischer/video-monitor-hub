@@ -52,7 +52,9 @@ Current Python modules:
 - `motion.detector`: frame comparison and motion detection.
 - `motion.stream_processor`: one-stream orchestration that combines detection and clip writing.
 - `services.laravel_api`: small HTTP client for the Laravel processor API.
-- `monitor.py`: container entry point that fetches active Laravel cameras, processes streams, and can still process one manual stream through `PROCESSOR_CAMERA_URL`.
+- `workers.camera_worker`: one-camera worker thread responsible for stream processing and video registration.
+- `workers.supervisor`: keeps one worker running for each active camera.
+- `monitor.py`: container entry point that refreshes active Laravel cameras, syncs workers, and can still process one manual stream through `PROCESSOR_CAMERA_URL`.
 
 ### Database
 
@@ -151,15 +153,17 @@ The motion detection script should run on the user's computer or in the Python p
 Expected processing flow:
 
 1. Retrieve active camera data from Laravel through `GET /api/processor/cameras`.
-2. Open each camera stream using its access URL.
-3. Capture frames continuously.
-4. Resize each frame to 720 pixels.
-5. Convert frame coloring as needed for processing.
-6. Apply blur with OpenCV to reduce noise.
-7. Compare frame differences.
-8. Generate a threshold representation containing changed areas.
-9. Detect contours in the changed frame areas.
-10. Register motion when a contour reaches the configured minimum size.
+2. Start one camera worker for each active camera that is not already running.
+3. Stop workers for cameras that are no longer active.
+4. Open each camera stream using its access URL.
+5. Capture frames continuously.
+6. Resize each frame to 720 pixels.
+7. Convert frame coloring as needed for processing.
+8. Apply blur with OpenCV to reduce noise.
+9. Compare frame differences.
+10. Generate a threshold representation containing changed areas.
+11. Detect contours in the changed frame areas.
+12. Register motion when a contour reaches the configured minimum size.
 
 ## Video Recording Flow
 
@@ -217,10 +221,11 @@ The current integration flow is:
 
 1. Laravel exposes active cameras at `GET /api/processor/cameras`.
 2. The Python processor calls that endpoint using the shared `PROCESSOR_API_TOKEN`.
-3. Python writes finished clips to `/app/storage/videos`.
-4. Docker mounts that same volume into Laravel at `storage/app/public/videos`.
-5. Python registers the clip metadata with `POST /api/processor/videos`.
-6. Laravel stores a `videos` row containing the camera, filename, public path, timestamps, duration, and metadata.
+3. Python starts or stops camera workers to match the active camera list.
+4. Each worker writes finished clips to `/app/storage/videos`.
+5. Docker mounts that same volume into Laravel at `storage/app/public/videos`.
+6. Python registers the clip metadata with `POST /api/processor/videos`.
+7. Laravel stores a `videos` row containing the camera, filename, public path, timestamps, duration, and metadata.
 
 The public video path stored in the database uses the Laravel storage symlink:
 
@@ -311,14 +316,13 @@ Implemented Laravel screens:
 - Video recording delete action with user ownership checks.
 - Laravel processor API for active camera retrieval and video registration.
 - Python processor API client.
+- Multi-camera processor workers.
 - WebM recording output for browser playback.
 - Separate PostgreSQL test database.
 - Demo seed data with a demo user, cameras, and playable placeholder recordings.
 
 Planned improvements:
 
-- Multi-camera processor workers.
 - Camera processing status and last-error tracking in Laravel.
-- Dashboard and table UI polish.
 - Screenshots in the README.
 - GitHub Actions for Laravel and Python test automation.

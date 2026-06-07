@@ -202,12 +202,13 @@ Processing flow:
 
 1. User creates and activates a camera in Laravel.
 2. Python calls `GET /api/processor/cameras`.
-3. Python opens each active camera stream.
-4. OpenCV detects meaningful frame changes.
-5. Python saves a WebM recording when motion stops.
-6. Python calls `POST /api/processor/videos`.
-7. Laravel stores the recording metadata in PostgreSQL.
-8. The user reviews the recording in Laravel.
+3. Python starts one worker thread per active camera.
+4. Each worker opens its camera stream.
+5. OpenCV detects meaningful frame changes.
+6. Python saves a WebM recording when motion stops.
+7. Python calls `POST /api/processor/videos`.
+8. Laravel stores the recording metadata in PostgreSQL.
+9. The user reviews the recording in Laravel.
 
 The shared recording volume is mounted at:
 
@@ -239,6 +240,12 @@ docker compose logs -f python-processor
 ```
 
 The normal Laravel-driven flow uses active cameras from the database, so `PROCESSOR_CAMERA_URL` is mainly useful as a fallback/debug path.
+
+The processor refreshes Laravel camera configuration every 10 seconds by default. Override this with:
+
+```bash
+PROCESSOR_REFRESH_SECONDS=5 docker compose up -d --build python-processor
+```
 
 ## Debugging With Xdebug
 
@@ -314,13 +321,11 @@ Implemented:
 - Browser-compatible WebM recording output.
 - Separate Laravel testing database.
 - Laravel and Python automated tests.
+- Multi-camera processor workers.
 
 Planned next improvements:
 
-- Multi-camera processor workers.
 - Camera processing status in Laravel.
-- Better dashboard and table UI.
-- Demo seed data.
 - Screenshots/GIFs for the README.
 - GitHub Actions for Laravel and Python tests.
 

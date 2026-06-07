@@ -45,11 +45,14 @@ class StreamProcessor:
         self.recording_started_at: dt.datetime | None = None
         self.current_output_path: Path | None = None
 
-    def process_forever(self):
+    def process_forever(self, stop_event=None):
         capture = self.capture_factory(self.stream_url)
 
         try:
             while True:
+                if stop_event is not None and stop_event.is_set():
+                    break
+
                 success, frame = capture.read()
 
                 if not success or frame is None:
