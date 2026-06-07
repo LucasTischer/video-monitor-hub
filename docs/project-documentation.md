@@ -214,6 +214,8 @@ Implemented Laravel screens:
 - Breeze authentication screens.
 - Authenticated camera dashboard with user-scoped camera metrics.
 - Authenticated camera list display.
+- Authenticated camera create/edit/detail screens.
+- Camera create/update/delete actions with validation and user ownership checks.
 - Authenticated recent video recording display.
 
-The complete camera create/edit/delete screens, video detail/playback screens, camera/update seed data, and full OpenCV motion detection implementation should be added to match the functional requirements above.
+The complete video detail/playback screens, camera/update seed data, and full OpenCV motion detection implementation should be added to match the functional requirements above.

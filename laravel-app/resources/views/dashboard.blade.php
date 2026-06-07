@@ -34,6 +34,9 @@
                 <div class="p-6">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ __('Cameras') }}</h3>
+                        <a href="{{ route('cameras.create') }}" class="inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-gray-700 focus:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:bg-gray-200 dark:text-gray-800 dark:hover:bg-white dark:focus:bg-white dark:focus:ring-offset-gray-800">
+                            {{ __('Add Camera') }}
+                        </a>
                     </div>
 
                     <div class="mt-4 overflow-x-auto">
@@ -45,6 +48,7 @@
                                     <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('Stream URL') }}</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('Status') }}</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('Videos') }}</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ __('Actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -59,10 +63,13 @@
                                             </span>
                                         </td>
                                         <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">{{ $camera->videos_count }}</td>
+                                        <td class="px-4 py-4 text-right text-sm">
+                                            <a href="{{ route('cameras.show', $camera) }}" class="font-medium text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300">{{ __('View') }}</a>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="5" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                                        <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
                                             {{ __('No cameras registered yet.') }}
                                         </td>
                                     </tr>

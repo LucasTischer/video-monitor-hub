@@ -34,6 +34,10 @@ if [ -f artisan ] && ! grep -q '^APP_KEY=base64:' .env; then
     php artisan key:generate --force
 fi
 
+if [ -d storage ] && [ -d bootstrap/cache ]; then
+    chown -R www-data:www-data storage bootstrap/cache
+fi
+
 if [ -f package.json ] && [ ! -f node_modules/.bin/vite ]; then
     npm install
 fi
