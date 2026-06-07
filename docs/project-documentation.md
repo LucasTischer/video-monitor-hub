@@ -203,6 +203,14 @@ Database schema creation remains an explicit Laravel migration step:
 docker compose exec laravel-app php artisan migrate
 ```
 
+Demo data can be created with:
+
+```bash
+docker compose exec laravel-app php artisan db:seed
+```
+
+The default seeder creates a demo user, inactive demo cameras, playable WebM recording placeholders, and recording metadata. Demo cameras are inactive by default so the processor does not attempt to connect to placeholder stream URLs.
+
 The shared Docker volume `shared-videos` is intended to connect generated Python recordings with storage accessible by the Laravel application.
 
 The current integration flow is:
@@ -305,10 +313,10 @@ Implemented Laravel screens:
 - Python processor API client.
 - WebM recording output for browser playback.
 - Separate PostgreSQL test database.
+- Demo seed data with a demo user, cameras, and playable placeholder recordings.
 
 Planned improvements:
 
-- Demo seed data.
 - Multi-camera processor workers.
 - Camera processing status and last-error tracking in Laravel.
 - Dashboard and table UI polish.

@@ -113,10 +113,23 @@ Run migrations:
 docker compose exec laravel-app php artisan migrate
 ```
 
+Seed demo data:
+
+```bash
+docker compose exec laravel-app php artisan db:seed
+```
+
 Open the app:
 
 ```text
 http://localhost:8000
+```
+
+Demo login:
+
+```text
+Email: demo@example.com
+Password: password
 ```
 
 PostgreSQL is exposed on port `5432`.
@@ -163,6 +176,16 @@ Run Python processor tests:
 ```bash
 docker compose run --rm python-processor pytest
 ```
+
+## Demo Data
+
+The database seeder creates:
+
+- one demo user;
+- three inactive demo cameras;
+- three playable WebM demo recordings.
+
+Demo cameras are inactive by default so the Python processor does not try to connect to fake stream URLs. Activate a camera and replace its stream URL when you want the processor to handle a real source.
 
 ## Processor Integration
 
