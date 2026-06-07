@@ -1,0 +1,12 @@
+{
+    "recommendations": [
+        "bmewburn.vscode-intelephense-client",
+        "xdebug.php-debug",
+        "amiralizadeh9480.laravel-extra-intellisense",
+        "onecentlin.laravel-blade",
+        "mikestead.dotenv",
+        "ms-azuretools.vscode-docker",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg"
+    ]
+}

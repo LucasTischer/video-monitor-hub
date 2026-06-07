@@ -70,6 +70,25 @@ Then run the Laravel setup commands inside the application container:
 docker compose exec laravel-app php artisan migrate
 ```
 
+## Debugging With Xdebug
+
+The Laravel Docker image includes Xdebug for local step debugging in VS Code.
+
+1. Install the recommended VS Code extensions from `.vscode/extensions.json`.
+2. Open the Run and Debug panel.
+3. Select `Listen for Xdebug`.
+4. Start debugging.
+5. Add a breakpoint in a Laravel controller, route, request, or model.
+6. Use the application at `http://localhost:8000`.
+
+Xdebug listens on port `9003` and maps the container path `/var/www/html` to the local `laravel-app` folder.
+
+To disable Xdebug temporarily:
+
+```bash
+XDEBUG_MODE=off docker compose up -d --build laravel-app
+```
+
 To reset the database during development, remove the database volume and run migrations again:
 
 ```bash

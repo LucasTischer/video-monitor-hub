@@ -178,6 +178,19 @@ docker compose exec laravel-app php artisan migrate
 
 The shared Docker volume `shared-videos` is intended to connect generated Python recordings with storage accessible by the Laravel application.
 
+### Local Debugging
+
+The Laravel Docker image includes Xdebug for VS Code step debugging. The project keeps shared editor configuration in `.vscode/launch.json`, mapping the container path `/var/www/html` to the local `laravel-app` folder.
+
+Default Xdebug settings are configured through Docker Compose:
+
+- `XDEBUG_MODE=debug,develop`
+- `XDEBUG_START_WITH_REQUEST=yes`
+- `XDEBUG_CLIENT_HOST=host.docker.internal`
+- `XDEBUG_CLIENT_PORT=9003`
+
+To use the debugger, start the `Listen for Xdebug` launch configuration in VS Code, set a breakpoint, and open the application in the browser.
+
 ## Recommended Data Model
 
 ### Cameras
