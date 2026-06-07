@@ -217,5 +217,7 @@ Implemented Laravel screens:
 - Authenticated camera create/edit/detail screens.
 - Camera create/update/delete actions with validation and user ownership checks.
 - Authenticated recent video recording display.
+- Authenticated video recording list/detail screens.
+- Video recording delete action with user ownership checks.
 
-The complete video detail/playback screens, camera/update seed data, and full OpenCV motion detection implementation should be added to match the functional requirements above.
+Camera/update seed data, Python-to-Laravel video creation, stored video file serving, and full OpenCV motion detection implementation should be added to match the functional requirements above.

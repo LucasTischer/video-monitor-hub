@@ -18,6 +18,9 @@
                     <x-nav-link :href="route('cameras.index')" :active="request()->routeIs('cameras.*')">
                         {{ __('Cameras') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('videos.index')" :active="request()->routeIs('videos.*')">
+                        {{ __('Videos') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -75,6 +78,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('cameras.index')" :active="request()->routeIs('cameras.*')">
                 {{ __('Cameras') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('videos.index')" :active="request()->routeIs('videos.*')">
+                {{ __('Videos') }}
             </x-responsive-nav-link>
         </div>
 
