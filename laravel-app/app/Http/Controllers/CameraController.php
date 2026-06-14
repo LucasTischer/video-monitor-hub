@@ -38,9 +38,9 @@ class CameraController extends Controller
             ->with('status', 'Camera created successfully.');
     }
 
-    public function show(Request $request, Camera $camera): View
+    public function show(Camera $camera): View
     {
-        $this->authorizeCamera($request, $camera);
+        $this->authorize('view', $camera);
 
         $camera->load(['videos' => fn ($query) => $query->latest()]);
 
@@ -49,9 +49,9 @@ class CameraController extends Controller
         ]);
     }
 
-    public function edit(Request $request, Camera $camera): View
+    public function edit(Camera $camera): View
     {
-        $this->authorizeCamera($request, $camera);
+        $this->authorize('update', $camera);
 
         return view('cameras.edit', [
             'camera' => $camera,
@@ -60,7 +60,7 @@ class CameraController extends Controller
 
     public function update(UpdateCameraRequest $request, Camera $camera): RedirectResponse
     {
-        $this->authorizeCamera($request, $camera);
+        $this->authorize('update', $camera);
 
         $camera->update($request->validated());
 
@@ -69,19 +69,14 @@ class CameraController extends Controller
             ->with('status', 'Camera updated successfully.');
     }
 
-    public function destroy(Request $request, Camera $camera): RedirectResponse
+    public function destroy(Camera $camera): RedirectResponse
     {
-        $this->authorizeCamera($request, $camera);
+        $this->authorize('delete', $camera);
 
         $camera->delete();
 
         return redirect()
             ->route('cameras.index')
             ->with('status', 'Camera deleted successfully.');
-    }
-
-    private function authorizeCamera(Request $request, Camera $camera): void
-    {
-        abort_unless($camera->user_id === $request->user()->id, 404);
     }
 }
