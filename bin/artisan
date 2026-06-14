@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+docker compose exec --user "$(id -u):$(id -g)" laravel-app php artisan "$@"

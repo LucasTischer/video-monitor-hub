@@ -110,13 +110,21 @@ docker compose up -d --build
 Run migrations:
 
 ```bash
-docker compose exec laravel-app php artisan migrate
+./bin/artisan migrate
 ```
 
 Seed demo data:
 
 ```bash
-docker compose exec laravel-app php artisan db:seed
+./bin/artisan db:seed
+```
+
+Use `./bin/artisan` for Laravel Artisan commands during development. It runs
+Artisan inside the `laravel-app` container as your host user, so generated files
+remain editable from VS Code:
+
+```bash
+./bin/artisan make:policy CameraPolicy --model=Camera
 ```
 
 Open the app:
@@ -168,7 +176,7 @@ This keeps `php artisan test` from clearing local development data in `video_mon
 Run Laravel tests:
 
 ```bash
-docker compose exec laravel-app php artisan test
+./bin/artisan test
 ```
 
 Run Python processor tests:
@@ -277,13 +285,13 @@ docker compose up -d --build --force-recreate
 Run migrations:
 
 ```bash
-docker compose exec laravel-app php artisan migrate
+./bin/artisan migrate
 ```
 
 Open a Laravel shell:
 
 ```bash
-docker compose exec laravel-app php artisan tinker
+./bin/artisan tinker
 ```
 
 Watch Laravel logs:
@@ -303,7 +311,7 @@ Reset development data:
 ```bash
 docker compose down -v
 docker compose up -d --build
-docker compose exec laravel-app php artisan migrate
+./bin/artisan migrate
 ```
 
 ## Current Status

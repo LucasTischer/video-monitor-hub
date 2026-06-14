@@ -204,14 +204,18 @@ The Laravel container performs first-run application preparation:
 Database schema creation remains an explicit Laravel migration step:
 
 ```bash
-docker compose exec laravel-app php artisan migrate
+./bin/artisan migrate
 ```
 
 Demo data can be created with:
 
 ```bash
-docker compose exec laravel-app php artisan db:seed
+./bin/artisan db:seed
 ```
+
+Artisan commands should be run through `./bin/artisan` during local development.
+The wrapper executes the command inside the Laravel container as the host user,
+which prevents generated files from being owned by the container user.
 
 The default seeder creates a demo user, inactive demo cameras, playable WebM recording placeholders, and recording metadata. Demo cameras are inactive by default so the processor does not attempt to connect to placeholder stream URLs.
 
@@ -247,7 +251,7 @@ Laravel feature tests use `RefreshDatabase`, so they must run against the separa
 Run Laravel tests:
 
 ```bash
-docker compose exec laravel-app php artisan test
+./bin/artisan test
 ```
 
 Run Python tests:
