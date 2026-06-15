@@ -22,9 +22,9 @@ class VideoController extends Controller
         ]);
     }
 
-    public function show(Request $request, Video $video): View
+    public function show(Video $video): View
     {
-        $this->authorizeVideo($request, $video);
+        $this->authorize('view', $video);
 
         $video->load('camera');
 
@@ -33,21 +33,14 @@ class VideoController extends Controller
         ]);
     }
 
-    public function destroy(Request $request, Video $video): RedirectResponse
+    public function destroy(Video $video): RedirectResponse
     {
-        $this->authorizeVideo($request, $video);
+        $this->authorize('delete', $video);
 
         $video->delete();
 
         return redirect()
             ->route('videos.index')
             ->with('status', 'Video recording deleted successfully.');
-    }
-
-    private function authorizeVideo(Request $request, Video $video): void
-    {
-        $video->loadMissing('camera');
-
-        abort_unless($video->camera->user_id === $request->user()->id, 404);
     }
 }
