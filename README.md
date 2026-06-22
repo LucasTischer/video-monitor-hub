@@ -7,7 +7,8 @@ This project is a portfolio rebuild of an older PHP/Python video monitoring appl
 ## Features
 
 - User registration, login, profile management, and logout through Laravel Breeze.
-- Authenticated camera CRUD with user ownership checks.
+- Authenticated camera CRUD with ownership and shared-access policies.
+- Camera sharing with viewer, editor, and manager roles.
 - Dashboard with camera and recording metrics.
 - Video recording list and detail pages.
 - Browser playback for new WebM recordings.
@@ -57,6 +58,8 @@ Laravel public storage: /storage/videos/{filename}
 ```
 
 Laravel is the control center. It owns users, cameras, videos, validation, authorization, and the browser UI.
+
+Camera authorization is centered on the camera record. Each camera has one owner through `cameras.user_id` and can also be shared with other users through `camera_shares`. Video access inherits the camera permissions, so users can only list, view, or delete recordings when they have the required access to the related camera.
 
 The Python processor is the worker. It asks Laravel for active cameras, processes each stream with OpenCV, saves recordings, and reports completed clips back to Laravel.
 
@@ -195,6 +198,18 @@ The database seeder creates:
 
 Demo cameras are inactive by default so the Python processor does not try to connect to fake stream URLs. Activate a camera and replace its stream URL when you want the processor to handle a real source.
 
+## Camera Sharing
+
+Camera owners can share a camera from the camera detail page by entering another user's email and assigning a role:
+
+```text
+viewer   View camera details and recordings
+editor   View camera details/recordings and edit camera settings
+manager  View, edit, delete, and manage shared access
+```
+
+Shared cameras appear in the shared user's camera list, dashboard, and video list. Users without ownership or a share record cannot access the camera or its recordings.
+
 ## Processor Integration
 
 The Python processor connects to Laravel through internal API endpoints secured by `PROCESSOR_API_TOKEN`.
@@ -321,6 +336,8 @@ Implemented:
 - Dockerized Laravel, Python, and PostgreSQL services.
 - Laravel Breeze authentication.
 - Camera CRUD.
+- Camera sharing with viewer/editor/manager roles.
+- Policy-based camera and video authorization.
 - Video management pages.
 - Dashboard metrics.
 - Python motion detector and clip writer.
@@ -334,6 +351,7 @@ Implemented:
 Planned next improvements:
 
 - Camera processing status in Laravel.
+- Sharing UI polish and role indicators in camera/video lists.
 - Screenshots/GIFs for the README.
 - GitHub Actions for Laravel and Python tests.
 

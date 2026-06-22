@@ -16,6 +16,7 @@ The Laravel application is responsible for the user interface and database-backe
 
 - User authentication.
 - Camera CRUD operations.
+- Camera sharing and role-based access control.
 - Listing recent motion recordings.
 - Playing recorded videos in the browser.
 - Navigation between the dashboard, camera management, video management, profile, and logout actions.
@@ -58,12 +59,13 @@ Current Python modules:
 
 ### Database
 
-The database stores users, cameras, and video recording metadata. In Docker, the project uses PostgreSQL 16.
+The database stores users, cameras, camera sharing rules, and video recording metadata. In Docker, the project uses PostgreSQL 16.
 
 Current main entities:
 
 - Users
 - Cameras
+- Camera shares
 - Videos
 
 The Docker setup uses two databases:
@@ -88,7 +90,7 @@ If a login or registration error occurs, the interface displays an alert with th
 
 ### Camera Management
 
-After authentication, the dashboard and camera pages list cameras registered by the current user.
+After authentication, the dashboard and camera pages list cameras owned by the current user and cameras shared with the current user.
 
 Each camera row should display:
 
@@ -96,7 +98,7 @@ Each camera row should display:
 - Camera stream URL
 - Optional location
 - Active/inactive status
-- Actions to view, edit, and delete the camera
+- Actions to view, edit, delete, and manage sharing when allowed by the user's role
 
 The add camera action opens a form containing:
 
@@ -116,11 +118,27 @@ The edit camera action opens a form populated with the selected camera data. The
 
 After saving, the camera data is updated in Laravel and becomes available to the processor API.
 
-The delete camera action removes the selected camera from the user's list.
+The delete camera action removes the selected camera and its related videos/shares when the user is allowed to delete it.
+
+### Camera Sharing
+
+Each camera has one owner through `cameras.user_id`. Owners can share cameras with other registered users from the camera detail page.
+
+The current share roles are:
+
+```text
+viewer   Can view camera details and recordings.
+editor   Can view camera details/recordings and edit camera settings.
+manager  Can view, edit, delete, and manage shared access.
+```
+
+Camera shares are stored in `camera_shares` with the shared user's role. A camera can only be shared once with the same user. Owners do not need a `camera_shares` row because ownership already gives full access.
+
+Camera policies are responsible for deciding whether the authenticated user can view, update, delete, or share a camera. Video policies defer to the related camera, so recordings inherit the camera's permissions.
 
 ### Video Viewing
 
-When the user opens the video recordings page, the system lists recent recordings for cameras owned by the authenticated user.
+When the user opens the video recordings page, the system lists recent recordings for cameras visible to the authenticated user. This includes owned cameras and cameras shared with the user.
 
 Each recording should display:
 
@@ -304,6 +322,19 @@ Current fields:
 - `created_at`
 - `updated_at`
 
+### Camera Shares
+
+Current fields:
+
+- `id`
+- `camera_id`
+- `user_id`
+- `role`
+- `created_at`
+- `updated_at`
+
+The table enforces a unique `camera_id` and `user_id` pair so the same camera cannot be shared with the same user more than once.
+
 ## Implementation Status Notes
 
 The current repository already includes the Laravel authentication scaffold, Docker services, a Python processor container, the initial camera/video database tables, and an authenticated dashboard.
@@ -311,13 +342,14 @@ The current repository already includes the Laravel authentication scaffold, Doc
 Implemented Laravel screens:
 
 - Breeze authentication screens.
-- Authenticated camera dashboard with user-scoped camera metrics.
-- Authenticated camera list display.
+- Authenticated camera dashboard with owned and shared camera metrics.
+- Authenticated camera list display for owned and shared cameras.
 - Authenticated camera create/edit/detail screens.
-- Camera create/update/delete actions with validation and user ownership checks.
-- Authenticated recent video recording display.
+- Camera create/update/delete actions with validation and policy checks.
+- Camera sharing create/update/delete actions with validation and policy checks.
+- Authenticated recent video recording display for owned and shared cameras.
 - Authenticated video recording list/detail screens.
-- Video recording delete action with user ownership checks.
+- Video recording delete action with camera-inherited policy checks.
 - Laravel processor API for active camera retrieval and video registration.
 - Python processor API client.
 - Multi-camera processor workers.

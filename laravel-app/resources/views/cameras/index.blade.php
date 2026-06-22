@@ -54,24 +54,33 @@
                                                         <circle cx="12" cy="12" r="3"/>
                                                     </svg>
                                                 </x-icon-link>
-                                                <x-icon-link :href="route('cameras.edit', $camera)" :label="__('Edit camera')">
-                                                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                        <path d="M12 20h9"/>
-                                                        <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/>
-                                                    </svg>
-                                                </x-icon-link>
-                                                <form method="POST" action="{{ route('cameras.destroy', $camera) }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <x-icon-button :label="__('Delete camera')">
+                                                @can('update', $camera)
+                                                    <x-icon-link :href="route('cameras.edit', $camera)" :label="__('Edit camera')">
                                                         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                            <path d="M3 6h18"/>
-                                                            <path d="M8 6V4h8v2"/>
-                                                            <path d="M19 6l-1 14H6L5 6"/>
-                                                            <path d="M10 11v5M14 11v5"/>
+                                                            <path d="M12 20h9"/>
+                                                            <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z"/>
                                                         </svg>
-                                                    </x-icon-button>
-                                                </form>
+                                                    </x-icon-link>
+                                                @endcan
+                                                @can('delete', $camera)
+                                                    <form method="POST" action="{{ route('cameras.destroy', $camera) }}">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <x-icon-button :label="__('Delete camera')">
+                                                            <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                <path d="M3 6h18"/>
+                                                                <path d="M8 6V4h8v2"/>
+                                                                <path d="M19 6l-1 14H6L5 6"/>
+                                                                <path d="M10 11v5M14 11v5"/>
+                                                            </svg>
+                                                        </x-icon-button>
+                                                    </form>
+                                                @endcan
+                                                @cannot('delete', $camera)
+                                                    @cannot('update', $camera)
+                                                        <span class="inline-flex h-8 items-center px-2 text-xs text-slate-400 dark:text-slate-500">{{ __('View only') }}</span>
+                                                    @endcannot
+                                                @endcannot
                                             </div>
                                         </td>
                                     </tr>
