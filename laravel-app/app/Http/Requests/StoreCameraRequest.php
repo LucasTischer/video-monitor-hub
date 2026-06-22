@@ -21,6 +21,7 @@ class StoreCameraRequest extends FormRequest
             'stream_url' => ['required', 'url', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'is_active' => ['boolean'],
+            'recording_retention_days' => ['nullable', 'integer', 'min:1', 'max:365'],
         ];
     }
 
@@ -28,6 +29,9 @@ class StoreCameraRequest extends FormRequest
     {
         $this->merge([
             'is_active' => $this->boolean('is_active'),
+            'recording_retention_days' => $this->input('recording_retention_days') === ''
+                ? null
+                : $this->input('recording_retention_days'),
         ]);
     }
 }

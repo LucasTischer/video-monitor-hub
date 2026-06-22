@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-#[Fillable(['user_id', 'name', 'stream_url', 'location', 'is_active'])]
+#[Fillable(['user_id', 'name', 'stream_url', 'location', 'is_active', 'recording_retention_days'])]
 class Camera extends Model
 {
     use HasFactory;
@@ -29,6 +29,7 @@ class Camera extends Model
     {
         return [
             'is_active' => 'boolean',
+            'recording_retention_days' => 'integer',
         ];
     }
 

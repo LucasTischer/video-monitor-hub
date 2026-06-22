@@ -40,6 +40,23 @@
 </div>
 
 <div class="mt-4">
+    <x-input-label for="recording_retention_days" :value="__('Recording retention')" />
+    <select
+        id="recording_retention_days"
+        name="recording_retention_days"
+        class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+    >
+        <option value="" @selected(old('recording_retention_days', $camera?->recording_retention_days) === null)>{{ __('Keep forever') }}</option>
+        <option value="1" @selected((string) old('recording_retention_days', $camera?->recording_retention_days) === '1')>{{ __('1 day') }}</option>
+        <option value="7" @selected((string) old('recording_retention_days', $camera?->recording_retention_days) === '7')>{{ __('7 days') }}</option>
+        <option value="30" @selected((string) old('recording_retention_days', $camera?->recording_retention_days) === '30')>{{ __('30 days') }}</option>
+        <option value="90" @selected((string) old('recording_retention_days', $camera?->recording_retention_days) === '90')>{{ __('90 days') }}</option>
+        <option value="365" @selected((string) old('recording_retention_days', $camera?->recording_retention_days) === '365')>{{ __('365 days') }}</option>
+    </select>
+    <x-input-error class="mt-2" :messages="$errors->get('recording_retention_days')" />
+</div>
+
+<div class="mt-4">
     <label for="is_active" class="inline-flex items-center">
         <input
             id="is_active"

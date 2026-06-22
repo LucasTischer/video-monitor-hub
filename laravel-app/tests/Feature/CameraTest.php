@@ -73,6 +73,7 @@ test('authenticated users can create cameras', function () {
             'stream_url' => 'http://camera.local/back-yard',
             'location' => 'Garden',
             'is_active' => '1',
+            'recording_retention_days' => '30',
         ])
         ->assertRedirect('/cameras');
 
@@ -82,6 +83,7 @@ test('authenticated users can create cameras', function () {
         'stream_url' => 'http://camera.local/back-yard',
         'location' => 'Garden',
         'is_active' => true,
+        'recording_retention_days' => 30,
     ]);
 });
 
@@ -94,6 +96,18 @@ test('camera creation requires valid input', function () {
             'stream_url' => 'not-a-url',
         ])
         ->assertSessionHasErrors(['name', 'stream_url']);
+});
+
+test('camera creation validates recording retention', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/cameras', [
+            'name' => 'Back Yard',
+            'stream_url' => 'http://camera.local/back-yard',
+            'recording_retention_days' => '0',
+        ])
+        ->assertSessionHasErrors(['recording_retention_days']);
 });
 
 test('authenticated users can update their cameras', function () {
@@ -112,6 +126,7 @@ test('authenticated users can update their cameras', function () {
             'stream_url' => 'http://camera.local/updated',
             'location' => 'Updated Location',
             'is_active' => '0',
+            'recording_retention_days' => '7',
         ])
         ->assertRedirect('/cameras');
 
@@ -121,6 +136,32 @@ test('authenticated users can update their cameras', function () {
         'stream_url' => 'http://camera.local/updated',
         'location' => 'Updated Location',
         'is_active' => false,
+        'recording_retention_days' => 7,
+    ]);
+});
+
+test('authenticated users can clear camera recording retention', function () {
+    $user = User::factory()->create();
+    $camera = Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Old Name',
+        'stream_url' => 'http://camera.local/old',
+        'is_active' => true,
+        'recording_retention_days' => 30,
+    ]);
+
+    $this->actingAs($user)
+        ->patch("/cameras/{$camera->id}", [
+            'name' => 'Updated Camera',
+            'stream_url' => 'http://camera.local/updated',
+            'is_active' => '1',
+            'recording_retention_days' => '',
+        ])
+        ->assertRedirect('/cameras');
+
+    $this->assertDatabaseHas('cameras', [
+        'id' => $camera->id,
+        'recording_retention_days' => null,
     ]);
 });
 
