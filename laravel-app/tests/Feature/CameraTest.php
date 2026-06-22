@@ -74,6 +74,8 @@ test('authenticated users can create cameras', function () {
             'location' => 'Garden',
             'is_active' => '1',
             'motion_detection_enabled' => '1',
+            'record_after_motion_seconds' => '5',
+            'pre_motion_buffer_seconds' => '2',
             'recording_retention_days' => '30',
         ])
         ->assertRedirect('/cameras');
@@ -85,6 +87,8 @@ test('authenticated users can create cameras', function () {
         'location' => 'Garden',
         'is_active' => true,
         'motion_detection_enabled' => true,
+        'record_after_motion_seconds' => 5,
+        'pre_motion_buffer_seconds' => 2,
         'recording_retention_days' => 30,
     ]);
 });
@@ -129,6 +133,8 @@ test('authenticated users can update their cameras', function () {
             'location' => 'Updated Location',
             'is_active' => '0',
             'motion_detection_enabled' => '0',
+            'record_after_motion_seconds' => '10',
+            'pre_motion_buffer_seconds' => '5',
             'recording_retention_days' => '7',
         ])
         ->assertRedirect('/cameras');
@@ -140,8 +146,23 @@ test('authenticated users can update their cameras', function () {
         'location' => 'Updated Location',
         'is_active' => false,
         'motion_detection_enabled' => false,
+        'record_after_motion_seconds' => 10,
+        'pre_motion_buffer_seconds' => 5,
         'recording_retention_days' => 7,
     ]);
+});
+
+test('camera creation validates motion recording settings', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/cameras', [
+            'name' => 'Back Yard',
+            'stream_url' => 'http://camera.local/back-yard',
+            'record_after_motion_seconds' => '0',
+            'pre_motion_buffer_seconds' => '31',
+        ])
+        ->assertSessionHasErrors(['record_after_motion_seconds', 'pre_motion_buffer_seconds']);
 });
 
 test('authenticated users can update camera motion detection setting', function () {

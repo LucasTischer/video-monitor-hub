@@ -10,9 +10,13 @@ from workers.camera_worker import CameraWorker
 
 
 class FakeProcessor:
-    def __init__(self, stream_url, output_directory):
+    created = []
+
+    def __init__(self, stream_url, output_directory, **kwargs):
         self.stream_url = stream_url
         self.output_directory = output_directory
+        self.kwargs = kwargs
+        FakeProcessor.created.append(self)
 
     def process_forever(self, stop_event=None):
         yield SimpleNamespace(
@@ -29,6 +33,10 @@ class FakeApiClient:
 
     def register_video(self, camera_id, saved_clip):
         self.registered.append((camera_id, saved_clip.output_path))
+
+
+def setup_function():
+    FakeProcessor.created = []
 
 
 def test_camera_worker_registers_saved_clips():
@@ -49,6 +57,29 @@ def test_camera_worker_registers_saved_clips():
 
     assert worker.last_error is None
     assert api_client.registered == [(7, Path("/app/storage/videos/clip.webm"))]
+
+
+def test_camera_worker_passes_recording_settings_to_processor():
+    camera = ProcessorCamera(
+        id=9,
+        name="Side Door",
+        stream_url="http://camera.local/side",
+        record_after_motion_seconds=5,
+        pre_motion_buffer_seconds=2,
+    )
+    worker = CameraWorker(
+        camera=camera,
+        output_directory="/app/storage/videos",
+        processor_factory=FakeProcessor,
+    )
+
+    worker.run()
+
+    processor = FakeProcessor.created[0]
+
+    assert worker.last_error is None
+    assert processor.kwargs["quiet_frames_to_stop"] == 100
+    assert processor.kwargs["pre_motion_buffer_frames"] == 40
 
 
 def test_camera_worker_captures_processor_errors():

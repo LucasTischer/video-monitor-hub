@@ -100,6 +100,32 @@ def test_stream_processor_can_use_a_custom_output_extension(tmp_path):
     assert clip_writer.started_paths[0].endswith(".avi")
 
 
+def test_stream_processor_uses_separate_pre_motion_buffer_size(tmp_path):
+    processor = StreamProcessor(
+        stream_url="http://camera.local/video",
+        output_directory=tmp_path,
+        detector=FakeDetector([False]),
+        quiet_frames_to_stop=10,
+        pre_motion_buffer_frames=3,
+    )
+
+    assert processor.quiet_frames_to_stop == 10
+    assert processor.pre_motion_buffer_frames == 3
+    assert processor.clip_writer.buffer_size == 3
+
+
+def test_stream_processor_keeps_trigger_frame_when_pre_motion_buffer_is_zero(tmp_path):
+    processor = StreamProcessor(
+        stream_url="http://camera.local/video",
+        output_directory=tmp_path,
+        detector=FakeDetector([False]),
+        pre_motion_buffer_frames=0,
+    )
+
+    assert processor.pre_motion_buffer_frames == 0
+    assert processor.clip_writer.buffer_size == 1
+
+
 def test_stream_processor_does_not_record_without_motion(tmp_path):
     clip_writer = FakeClipWriter()
     processor = StreamProcessor(

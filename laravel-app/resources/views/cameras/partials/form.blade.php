@@ -56,6 +56,46 @@
     <x-input-error class="mt-2" :messages="$errors->get('recording_retention_days')" />
 </div>
 
+<div class="mt-4 grid gap-4 sm:grid-cols-2">
+    <div>
+        <x-input-label for="record_after_motion_seconds" :value="__('Record after motion stops')" />
+        <select
+            id="record_after_motion_seconds"
+            name="record_after_motion_seconds"
+            class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+        >
+            @foreach ([1, 2, 5, 10, 30, 60] as $seconds)
+                <option
+                    value="{{ $seconds }}"
+                    @selected((int) old('record_after_motion_seconds', $camera?->record_after_motion_seconds ?? 2) === $seconds)
+                >
+                    {{ trans_choice(':count second|:count seconds', $seconds) }}
+                </option>
+            @endforeach
+        </select>
+        <x-input-error class="mt-2" :messages="$errors->get('record_after_motion_seconds')" />
+    </div>
+
+    <div>
+        <x-input-label for="pre_motion_buffer_seconds" :value="__('Pre-motion buffer')" />
+        <select
+            id="pre_motion_buffer_seconds"
+            name="pre_motion_buffer_seconds"
+            class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+        >
+            @foreach ([0, 1, 2, 5, 10, 30] as $seconds)
+                <option
+                    value="{{ $seconds }}"
+                    @selected((int) old('pre_motion_buffer_seconds', $camera?->pre_motion_buffer_seconds ?? 2) === $seconds)
+                >
+                    {{ $seconds === 0 ? __('No buffer') : trans_choice(':count second|:count seconds', $seconds) }}
+                </option>
+            @endforeach
+        </select>
+        <x-input-error class="mt-2" :messages="$errors->get('pre_motion_buffer_seconds')" />
+    </div>
+</div>
+
 <div class="mt-4">
     <label for="motion_detection_enabled" class="inline-flex items-center">
         <input

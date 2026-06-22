@@ -29,12 +29,18 @@ class StreamProcessor:
         output_extension: str = "webm",
         fps: int = 20,
         quiet_frames_to_stop: int = 32,
+        pre_motion_buffer_frames: int | None = None,
         capture_factory=cv2.VideoCapture,
     ) -> None:
         self.stream_url = stream_url
         self.output_directory = Path(output_directory)
         self.detector = detector or MotionDetector()
-        self.clip_writer = clip_writer or ClipWriter(buffer_size=quiet_frames_to_stop)
+        self.pre_motion_buffer_frames = (
+            quiet_frames_to_stop
+            if pre_motion_buffer_frames is None
+            else pre_motion_buffer_frames
+        )
+        self.clip_writer = clip_writer or ClipWriter(buffer_size=max(1, self.pre_motion_buffer_frames))
         self.codec = codec
         self.output_extension = output_extension.lstrip(".")
         self.fps = fps

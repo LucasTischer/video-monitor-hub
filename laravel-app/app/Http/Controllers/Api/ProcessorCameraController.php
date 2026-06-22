@@ -17,7 +17,15 @@ class ProcessorCameraController extends Controller
             ->where('is_active', true)
             ->where('motion_detection_enabled', true)
             ->orderBy('id')
-            ->get(['id', 'name', 'stream_url', 'location', 'motion_detection_enabled']);
+            ->get([
+                'id',
+                'name',
+                'stream_url',
+                'location',
+                'motion_detection_enabled',
+                'record_after_motion_seconds',
+                'pre_motion_buffer_seconds',
+            ]);
 
         return response()->json([
             'data' => $cameras,

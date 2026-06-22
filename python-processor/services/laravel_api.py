@@ -10,6 +10,8 @@ class ProcessorCamera:
     name: str
     stream_url: str
     location: str | None = None
+    record_after_motion_seconds: int = 2
+    pre_motion_buffer_seconds: int = 2
 
 
 class LaravelApiClient:
@@ -32,6 +34,8 @@ class LaravelApiClient:
                 name=camera["name"],
                 stream_url=camera["stream_url"],
                 location=camera.get("location"),
+                record_after_motion_seconds=camera.get("record_after_motion_seconds", 2),
+                pre_motion_buffer_seconds=camera.get("pre_motion_buffer_seconds", 2),
             )
             for camera in response.json()["data"]
         ]
