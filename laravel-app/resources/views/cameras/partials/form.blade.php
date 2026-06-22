@@ -57,6 +57,21 @@
 </div>
 
 <div class="mt-4">
+    <label for="motion_detection_enabled" class="inline-flex items-center">
+        <input
+            id="motion_detection_enabled"
+            name="motion_detection_enabled"
+            type="checkbox"
+            value="1"
+            @checked(old('motion_detection_enabled', $camera?->motion_detection_enabled ?? true))
+            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
+        >
+        <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Motion detection enabled') }}</span>
+    </label>
+    <x-input-error class="mt-2" :messages="$errors->get('motion_detection_enabled')" />
+</div>
+
+<div class="mt-4">
     <label for="is_active" class="inline-flex items-center">
         <input
             id="is_active"

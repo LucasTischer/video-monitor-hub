@@ -73,6 +73,7 @@ test('authenticated users can create cameras', function () {
             'stream_url' => 'http://camera.local/back-yard',
             'location' => 'Garden',
             'is_active' => '1',
+            'motion_detection_enabled' => '1',
             'recording_retention_days' => '30',
         ])
         ->assertRedirect('/cameras');
@@ -83,6 +84,7 @@ test('authenticated users can create cameras', function () {
         'stream_url' => 'http://camera.local/back-yard',
         'location' => 'Garden',
         'is_active' => true,
+        'motion_detection_enabled' => true,
         'recording_retention_days' => 30,
     ]);
 });
@@ -126,6 +128,7 @@ test('authenticated users can update their cameras', function () {
             'stream_url' => 'http://camera.local/updated',
             'location' => 'Updated Location',
             'is_active' => '0',
+            'motion_detection_enabled' => '0',
             'recording_retention_days' => '7',
         ])
         ->assertRedirect('/cameras');
@@ -136,7 +139,33 @@ test('authenticated users can update their cameras', function () {
         'stream_url' => 'http://camera.local/updated',
         'location' => 'Updated Location',
         'is_active' => false,
+        'motion_detection_enabled' => false,
         'recording_retention_days' => 7,
+    ]);
+});
+
+test('authenticated users can update camera motion detection setting', function () {
+    $user = User::factory()->create();
+    $camera = Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Old Name',
+        'stream_url' => 'http://camera.local/old',
+        'is_active' => true,
+        'motion_detection_enabled' => true,
+    ]);
+
+    $this->actingAs($user)
+        ->patch("/cameras/{$camera->id}", [
+            'name' => 'Updated Camera',
+            'stream_url' => 'http://camera.local/updated',
+            'is_active' => '1',
+            'motion_detection_enabled' => '0',
+        ])
+        ->assertRedirect('/cameras');
+
+    $this->assertDatabaseHas('cameras', [
+        'id' => $camera->id,
+        'motion_detection_enabled' => false,
     ]);
 });
 

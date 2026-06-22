@@ -21,6 +21,7 @@ test('processor can list active cameras', function () {
         'stream_url' => 'http://camera.local/front',
         'location' => 'Entrance',
         'is_active' => true,
+        'motion_detection_enabled' => true,
     ]);
 
     Camera::create([
@@ -28,13 +29,23 @@ test('processor can list active cameras', function () {
         'name' => 'Inactive Camera',
         'stream_url' => 'http://camera.local/inactive',
         'is_active' => false,
+        'motion_detection_enabled' => true,
+    ]);
+
+    Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Detection Disabled Camera',
+        'stream_url' => 'http://camera.local/detection-disabled',
+        'is_active' => true,
+        'motion_detection_enabled' => false,
     ]);
 
     $this->withToken('test-processor-token')
         ->getJson('/api/processor/cameras')
         ->assertOk()
         ->assertJsonPath('data.0.name', 'Front Gate')
-        ->assertJsonMissing(['name' => 'Inactive Camera']);
+        ->assertJsonMissing(['name' => 'Inactive Camera'])
+        ->assertJsonMissing(['name' => 'Detection Disabled Camera']);
 });
 
 test('processor can register a video recording', function () {
