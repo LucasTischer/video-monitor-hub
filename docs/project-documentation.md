@@ -202,11 +202,14 @@ The project defines three Docker services:
 
 ```text
 laravel-app       Laravel application served by Apache/PHP
+laravel-scheduler Laravel scheduler worker for recurring Artisan tasks
 python-processor  Python service for video processing
 database          PostgreSQL database
 ```
 
 The Laravel service is built from `docker/laravel/Dockerfile`. It uses Apache with PHP 8.4, enables URL rewriting for Laravel, installs the PostgreSQL PDO extension, includes Composer, and includes Node.js so Breeze/Vite assets can be built inside Docker.
+
+The scheduler service uses the same Laravel image and mounted application code, but runs `php artisan schedule:work` instead of Apache. It is responsible for recurring Artisan tasks such as pruning expired video recordings.
 
 The Laravel container performs first-run application preparation:
 
@@ -256,6 +259,19 @@ The public video path stored in the database uses the Laravel storage symlink:
 ```
 
 New processor recordings use WebM output so the Laravel video page can play them in modern browsers.
+
+### Scheduled Cleanup
+
+Laravel schedules the `videos:prune-expired` command daily. The command checks each video's related camera retention setting:
+
+```text
+recording_retention_days = null  Keep recordings forever.
+recording_retention_days = N     Delete recordings older than N days.
+```
+
+When a recording expires, Laravel deletes both the `videos` database row and the file from the public storage disk.
+
+In Docker, the `laravel-scheduler` service keeps the scheduler running with `php artisan schedule:work`.
 
 ## Testing Strategy
 
@@ -354,6 +370,7 @@ Implemented Laravel screens:
 - Python processor API client.
 - Multi-camera processor workers.
 - WebM recording output for browser playback.
+- Camera-level recording retention and scheduled expired recording cleanup.
 - Separate PostgreSQL test database.
 - Demo seed data with a demo user, cameras, and playable placeholder recordings.
 

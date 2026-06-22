@@ -87,6 +87,7 @@ http://laravel-app/api
 
 ```text
 laravel-app       Laravel application served by Apache/PHP
+laravel-scheduler Laravel scheduler worker for recurring Artisan tasks
 python-processor  Python service for video processing
 database          PostgreSQL database
 ```
@@ -186,6 +187,34 @@ Run Python processor tests:
 
 ```bash
 docker compose run --rm python-processor pytest
+```
+
+## Scheduled Tasks
+
+The `laravel-scheduler` service runs Laravel's scheduler with:
+
+```bash
+php artisan schedule:work
+```
+
+It executes scheduled Laravel commands, including:
+
+```text
+videos:prune-expired
+```
+
+That command runs daily and deletes expired recordings according to each camera's recording retention setting.
+
+Inspect scheduled tasks:
+
+```bash
+./bin/artisan schedule:list
+```
+
+Start or restart the scheduler service:
+
+```bash
+docker compose up -d laravel-scheduler
 ```
 
 ## Demo Data
@@ -344,6 +373,7 @@ Implemented:
 - Python-to-Laravel API integration.
 - Shared video storage.
 - Browser-compatible WebM recording output.
+- Scheduled expired recording cleanup.
 - Separate Laravel testing database.
 - Laravel and Python automated tests.
 - Multi-camera processor workers.

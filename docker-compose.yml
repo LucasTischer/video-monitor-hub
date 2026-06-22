@@ -25,7 +25,29 @@ services:
       database:
         condition: service_healthy
 
-  # 2. Python Video Processor
+  # 2. Laravel Scheduler
+  laravel-scheduler:
+    build:
+      context: .
+      dockerfile: docker/laravel/Dockerfile
+    container_name: monitor_laravel_scheduler
+    command: php artisan schedule:work
+    volumes:
+      - ./laravel-app:/var/www/html
+      - laravel-vendor:/var/www/html/vendor
+      - laravel-node-modules:/var/www/html/node_modules
+      - shared-videos:/var/www/html/storage/app/public/videos
+    environment:
+      DB_TEST_DATABASE: ${DB_TEST_DATABASE:-video_monitor_test}
+      PROCESSOR_API_TOKEN: ${PROCESSOR_API_TOKEN:-local-dev-processor-token}
+      XDEBUG_MODE: ${XDEBUG_MODE:-off}
+    depends_on:
+      database:
+        condition: service_healthy
+      laravel-app:
+        condition: service_started
+
+  # 3. Python Video Processor
   python-processor:
     build: ./python-processor
     container_name: monitor_python
@@ -43,7 +65,7 @@ services:
       - laravel-app
       - database
 
-  # 3. Postgres Database
+  # 4. Postgres Database
   database:
     image: postgres:16
     container_name: monitor_db
