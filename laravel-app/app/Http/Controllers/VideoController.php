@@ -12,8 +12,8 @@ class VideoController extends Controller
     public function index(Request $request): View
     {
         $videos = Video::query()
+            ->visibleTo($request->user())
             ->with('camera')
-            ->whereHas('camera', fn ($query) => $query->where('user_id', $request->user()->id))
             ->latest()
             ->get();
 

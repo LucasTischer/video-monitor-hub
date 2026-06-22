@@ -49,6 +49,50 @@ test('authenticated users can view their videos', function () {
         ->assertDontSee('private-office-motion.mp4');
 });
 
+test('authenticated users can view videos from cameras shared with them', function () {
+    $user = User::factory()->create();
+    $owner = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    $sharedCamera = Camera::create([
+        'user_id' => $owner->id,
+        'name' => 'Shared Hallway',
+        'stream_url' => 'http://camera.local/shared-hallway',
+        'is_active' => true,
+    ]);
+
+    $unsharedCamera = Camera::create([
+        'user_id' => $otherUser->id,
+        'name' => 'Unshared Hallway',
+        'stream_url' => 'http://camera.local/unshared-hallway',
+        'is_active' => true,
+    ]);
+
+    Video::create([
+        'camera_id' => $sharedCamera->id,
+        'filename' => 'shared-hallway-motion.mp4',
+        'path' => '/storage/videos/shared-hallway-motion.mp4',
+    ]);
+
+    Video::create([
+        'camera_id' => $unsharedCamera->id,
+        'filename' => 'unshared-hallway-motion.mp4',
+        'path' => '/storage/videos/unshared-hallway-motion.mp4',
+    ]);
+
+    $sharedCamera->sharedUsers()->attach($user->id, [
+        'role' => 'viewer',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/videos')
+        ->assertOk()
+        ->assertSee('Shared Hallway')
+        ->assertSee('shared-hallway-motion.mp4')
+        ->assertDontSee('Unshared Hallway')
+        ->assertDontSee('unshared-hallway-motion.mp4');
+});
+
 test('authenticated users can view a video detail page', function () {
     $user = User::factory()->create();
     $camera = Camera::create([
@@ -93,6 +137,67 @@ test('users cannot view another users video', function () {
     $this->actingAs($user)
         ->get("/videos/{$video->id}")
         ->assertNotFound();
+});
+
+test('shared camera viewers can view but not delete videos', function () {
+    $owner = User::factory()->create();
+    $viewer = User::factory()->create();
+    $camera = Camera::create([
+        'user_id' => $owner->id,
+        'name' => 'Shared Lobby',
+        'stream_url' => 'http://camera.local/shared-lobby',
+        'is_active' => true,
+    ]);
+    $video = Video::create([
+        'camera_id' => $camera->id,
+        'filename' => 'shared-lobby-motion.mp4',
+        'path' => '/storage/videos/shared-lobby-motion.mp4',
+    ]);
+
+    $camera->sharedUsers()->attach($viewer->id, [
+        'role' => 'viewer',
+    ]);
+
+    $this->actingAs($viewer)
+        ->get("/videos/{$video->id}")
+        ->assertOk()
+        ->assertSee('shared-lobby-motion.mp4');
+
+    $this->actingAs($viewer)
+        ->delete("/videos/{$video->id}")
+        ->assertNotFound();
+
+    $this->assertDatabaseHas('videos', [
+        'id' => $video->id,
+    ]);
+});
+
+test('shared camera managers can delete videos', function () {
+    $owner = User::factory()->create();
+    $manager = User::factory()->create();
+    $camera = Camera::create([
+        'user_id' => $owner->id,
+        'name' => 'Managed Lobby',
+        'stream_url' => 'http://camera.local/managed-lobby',
+        'is_active' => true,
+    ]);
+    $video = Video::create([
+        'camera_id' => $camera->id,
+        'filename' => 'managed-lobby-motion.mp4',
+        'path' => '/storage/videos/managed-lobby-motion.mp4',
+    ]);
+
+    $camera->sharedUsers()->attach($manager->id, [
+        'role' => 'manager',
+    ]);
+
+    $this->actingAs($manager)
+        ->delete("/videos/{$video->id}")
+        ->assertRedirect('/videos');
+
+    $this->assertDatabaseMissing('videos', [
+        'id' => $video->id,
+    ]);
 });
 
 test('authenticated users can delete their videos', function () {

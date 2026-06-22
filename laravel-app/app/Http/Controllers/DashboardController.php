@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Video;
+use App\Models\Camera;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -12,13 +13,14 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        $cameras = $user->cameras()
+        $cameras = Camera::query()
+            ->visibleTo($user)
             ->withCount('videos')
             ->latest()
             ->get();
 
         $userVideos = Video::query()
-            ->whereHas('camera', fn ($query) => $query->where('user_id', $user->id));
+            ->visibleTo($user);
 
         $recentVideos = (clone $userVideos)
             ->with('camera')

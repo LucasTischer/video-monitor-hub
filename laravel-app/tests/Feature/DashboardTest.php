@@ -45,3 +45,54 @@ test('dashboard displays the authenticated users cameras and videos', function (
         ->assertSee('front-gate-motion.mp4')
         ->assertDontSee('Private Office');
 });
+
+test('dashboard displays cameras and videos shared with the authenticated user', function () {
+    $user = User::factory()->create();
+    $owner = User::factory()->create();
+    $otherUser = User::factory()->create();
+
+    $sharedCamera = Camera::create([
+        'user_id' => $owner->id,
+        'name' => 'Shared Porch',
+        'stream_url' => 'http://camera.local/shared-porch',
+        'location' => 'Porch',
+        'is_active' => true,
+    ]);
+
+    $unsharedCamera = Camera::create([
+        'user_id' => $otherUser->id,
+        'name' => 'Private Storage',
+        'stream_url' => 'http://camera.local/private-storage',
+        'location' => 'Storage',
+        'is_active' => true,
+    ]);
+
+    Video::create([
+        'camera_id' => $sharedCamera->id,
+        'filename' => 'shared-porch-motion.mp4',
+        'path' => 'videos/shared-porch-motion.mp4',
+        'started_at' => now(),
+        'duration_seconds' => 9,
+    ]);
+
+    Video::create([
+        'camera_id' => $unsharedCamera->id,
+        'filename' => 'private-storage-motion.mp4',
+        'path' => 'videos/private-storage-motion.mp4',
+        'started_at' => now(),
+        'duration_seconds' => 7,
+    ]);
+
+    $sharedCamera->sharedUsers()->attach($user->id, [
+        'role' => 'viewer',
+    ]);
+
+    $this->actingAs($user)
+        ->get('/dashboard')
+        ->assertOk()
+        ->assertSee('Shared Porch')
+        ->assertSee('Porch')
+        ->assertSee('shared-porch-motion.mp4')
+        ->assertDontSee('Private Storage')
+        ->assertDontSee('private-storage-motion.mp4');
+});

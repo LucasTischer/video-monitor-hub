@@ -8,6 +8,14 @@ use Illuminate\Auth\Access\Response;
 
 class CameraPolicy
 {
+    private const VIEW_ROLES = ['viewer', 'editor', 'manager'];
+
+    private const UPDATE_ROLES = ['editor', 'manager'];
+
+    private const DELETE_ROLES = ['manager'];
+
+    private const SHARE_ROLES = ['manager'];
+
     /**
      * Determine whether the user can view any models.
      */
@@ -21,7 +29,9 @@ class CameraPolicy
      */
     public function view(User $user, Camera $camera): bool|Response
     {
-        return $this->ownsCamera($user, $camera);
+        return $this->ownsCamera($user, $camera) || $this->hasSharedRole($user, $camera, self::VIEW_ROLES)
+            ? true
+            : Response::denyAsNotFound();
     }
 
     /**
@@ -37,7 +47,9 @@ class CameraPolicy
      */
     public function update(User $user, Camera $camera): bool|Response
     {
-        return $this->ownsCamera($user, $camera);
+        return $this->ownsCamera($user, $camera) || $this->hasSharedRole($user, $camera, self::UPDATE_ROLES)
+            ? true
+            : Response::denyAsNotFound();
     }
 
     /**
@@ -45,7 +57,16 @@ class CameraPolicy
      */
     public function delete(User $user, Camera $camera): bool|Response
     {
-        return $this->ownsCamera($user, $camera);
+        return $this->ownsCamera($user, $camera) || $this->hasSharedRole($user, $camera, self::DELETE_ROLES)
+            ? true
+            : Response::denyAsNotFound();
+    }
+
+    public function share(User $user, Camera $camera): bool|Response
+    {
+        return $this->ownsCamera($user, $camera) || $this->hasSharedRole($user, $camera, self::SHARE_ROLES)
+            ? true
+            : Response::denyAsNotFound();
     }
 
     /**
@@ -64,10 +85,19 @@ class CameraPolicy
         return false;
     }
 
-    private function ownsCamera(User $user, Camera $camera): bool|Response
+    private function ownsCamera(User $user, Camera $camera): bool
     {
-        return $camera->user_id === $user->id
-            ? true
-            : Response::denyAsNotFound();
+        return $camera->user_id === $user->id;
+    }
+
+    /**
+     * @param  array<int, string>  $roles
+     */
+    private function hasSharedRole(User $user, Camera $camera, array $roles): bool
+    {
+        return $camera->sharedUsers()
+            ->whereKey($user->id)
+            ->wherePivotIn('role', $roles)
+            ->exists();
     }
 }

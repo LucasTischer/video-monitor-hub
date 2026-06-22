@@ -13,8 +13,8 @@ class CameraController extends Controller
 {
     public function index(Request $request): View
     {
-        $cameras = $request->user()
-            ->cameras()
+        $cameras = Camera::query()
+            ->visibleTo($request->user())
             ->withCount('videos')
             ->latest()
             ->get();
@@ -42,7 +42,10 @@ class CameraController extends Controller
     {
         $this->authorize('view', $camera);
 
-        $camera->load(['videos' => fn ($query) => $query->latest()]);
+        $camera->load([
+            'sharedUsers' => fn ($query) => $query->orderBy('name'),
+            'videos' => fn ($query) => $query->latest(),
+        ]);
 
         return view('cameras.show', [
             'camera' => $camera,

@@ -21,7 +21,11 @@ class VideoPolicy
      */
     public function view(User $user, Video $video): bool|Response
     {
-        return $this->ownsVideo($user, $video);
+        $video->loadMissing('camera');
+
+        return $user->can('view', $video->camera)
+            ? true
+            : Response::denyAsNotFound();
     }
 
     /**
@@ -45,7 +49,11 @@ class VideoPolicy
      */
     public function delete(User $user, Video $video): bool|Response
     {
-        return $this->ownsVideo($user, $video);
+        $video->loadMissing('camera');
+
+        return $user->can('delete', $video->camera)
+            ? true
+            : Response::denyAsNotFound();
     }
 
     /**
@@ -64,12 +72,4 @@ class VideoPolicy
         return false;
     }
 
-    private function ownsVideo(User $user, Video $video): bool|Response
-    {
-        $video->loadMissing('camera');
-
-        return $video->camera->user_id === $user->id
-            ? true
-            : Response::denyAsNotFound();
-    }
 }

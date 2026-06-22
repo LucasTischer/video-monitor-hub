@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -24,6 +25,14 @@ class Video extends Model
     public function camera(): BelongsTo
     {
         return $this->belongsTo(Camera::class);
+    }
+
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        return $query->whereHas(
+            'camera',
+            fn (Builder $query) => $query->visibleTo($user),
+        );
     }
 
     protected function casts(): array
