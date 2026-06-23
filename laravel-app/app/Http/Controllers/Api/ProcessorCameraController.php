@@ -16,6 +16,7 @@ class ProcessorCameraController extends Controller
         $cameras = Camera::query()
             ->where('is_active', true)
             ->where('motion_detection_enabled', true)
+            ->currentlyMonitorable()
             ->orderBy('id')
             ->get([
                 'id',

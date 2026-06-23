@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Carbon;
 
-#[Fillable(['user_id', 'name', 'stream_url', 'location', 'is_active', 'motion_detection_enabled', 'record_after_motion_seconds', 'pre_motion_buffer_seconds', 'recording_retention_days'])]
+#[Fillable(['user_id', 'name', 'stream_url', 'location', 'is_active', 'motion_detection_enabled', 'record_after_motion_seconds', 'pre_motion_buffer_seconds', 'monitoring_starts_at', 'monitoring_ends_at', 'recording_retention_days'])]
 class Camera extends Model
 {
     use HasFactory;
@@ -52,6 +53,28 @@ class Camera extends Model
         return $query->where(function (Builder $query) use ($user): void {
             $query->where('user_id', $user->id)
                 ->orWhereHas('sharedUsers', fn (Builder $query) => $query->whereKey($user->id));
+        });
+    }
+
+    public function scopeCurrentlyMonitorable(Builder $query, ?Carbon $now = null): Builder
+    {
+        $currentTime = ($now ?? now(config('app.timezone')))->format('H:i:s');
+
+        return $query->where(function (Builder $query) use ($currentTime): void {
+            $query->where(function (Builder $query): void {
+                $query->whereNull('monitoring_starts_at')
+                    ->whereNull('monitoring_ends_at');
+            })->orWhere(function (Builder $query) use ($currentTime): void {
+                $query->whereColumn('monitoring_starts_at', '<', 'monitoring_ends_at')
+                    ->where('monitoring_starts_at', '<=', $currentTime)
+                    ->where('monitoring_ends_at', '>', $currentTime);
+            })->orWhere(function (Builder $query) use ($currentTime): void {
+                $query->whereColumn('monitoring_starts_at', '>', 'monitoring_ends_at')
+                    ->where(function (Builder $query) use ($currentTime): void {
+                        $query->where('monitoring_starts_at', '<=', $currentTime)
+                            ->orWhere('monitoring_ends_at', '>', $currentTime);
+                    });
+            });
         });
     }
 }

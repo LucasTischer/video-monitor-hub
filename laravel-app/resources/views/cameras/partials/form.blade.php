@@ -97,6 +97,35 @@
 </div>
 
 <div class="mt-4">
+    <x-input-label :value="__('Monitoring window')" />
+    <div class="mt-1 grid gap-4 sm:grid-cols-2">
+        <div>
+            <x-input-label for="monitoring_starts_at" :value="__('Start time')" />
+            <x-text-input
+                id="monitoring_starts_at"
+                name="monitoring_starts_at"
+                type="time"
+                class="mt-1 block w-full"
+                :value="old('monitoring_starts_at', $camera?->monitoring_starts_at ? substr($camera->monitoring_starts_at, 0, 5) : null)"
+            />
+            <x-input-error class="mt-2" :messages="$errors->get('monitoring_starts_at')" />
+        </div>
+
+        <div>
+            <x-input-label for="monitoring_ends_at" :value="__('End time')" />
+            <x-text-input
+                id="monitoring_ends_at"
+                name="monitoring_ends_at"
+                type="time"
+                class="mt-1 block w-full"
+                :value="old('monitoring_ends_at', $camera?->monitoring_ends_at ? substr($camera->monitoring_ends_at, 0, 5) : null)"
+            />
+            <x-input-error class="mt-2" :messages="$errors->get('monitoring_ends_at')" />
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
     <label for="motion_detection_enabled" class="inline-flex items-center">
         <input
             id="motion_detection_enabled"

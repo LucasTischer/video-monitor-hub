@@ -2,9 +2,16 @@
 
 use App\Models\Camera;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 
 beforeEach(function () {
     config(['processor.api_token' => 'test-processor-token']);
+    config(['app.timezone' => 'America/Sao_Paulo']);
+    Carbon::setTestNow(Carbon::parse('2026-06-23 10:00:00', 'America/Sao_Paulo'));
+});
+
+afterEach(function () {
+    Carbon::setTestNow();
 });
 
 test('processor camera endpoint requires a valid token', function () {
@@ -50,6 +57,87 @@ test('processor can list active cameras', function () {
         ->assertJsonPath('data.0.pre_motion_buffer_seconds', 2)
         ->assertJsonMissing(['name' => 'Inactive Camera'])
         ->assertJsonMissing(['name' => 'Detection Disabled Camera']);
+});
+
+test('processor includes cameras without a monitoring window', function () {
+    $user = User::factory()->create();
+
+    Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Always On Camera',
+        'stream_url' => 'http://camera.local/always-on',
+        'is_active' => true,
+        'motion_detection_enabled' => true,
+        'monitoring_starts_at' => null,
+        'monitoring_ends_at' => null,
+    ]);
+
+    $this->withToken('test-processor-token')
+        ->getJson('/api/processor/cameras')
+        ->assertOk()
+        ->assertJsonPath('data.0.name', 'Always On Camera');
+});
+
+test('processor filters cameras by same-day monitoring windows', function () {
+    $user = User::factory()->create();
+
+    Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Business Hours Camera',
+        'stream_url' => 'http://camera.local/business-hours',
+        'is_active' => true,
+        'motion_detection_enabled' => true,
+        'monitoring_starts_at' => '08:00',
+        'monitoring_ends_at' => '18:00',
+    ]);
+
+    Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Afternoon Camera',
+        'stream_url' => 'http://camera.local/afternoon',
+        'is_active' => true,
+        'motion_detection_enabled' => true,
+        'monitoring_starts_at' => '13:00',
+        'monitoring_ends_at' => '18:00',
+    ]);
+
+    $this->withToken('test-processor-token')
+        ->getJson('/api/processor/cameras')
+        ->assertOk()
+        ->assertJsonPath('data.0.name', 'Business Hours Camera')
+        ->assertJsonMissing(['name' => 'Afternoon Camera']);
+});
+
+test('processor filters cameras by overnight monitoring windows', function () {
+    $user = User::factory()->create();
+
+    Carbon::setTestNow(Carbon::parse('2026-06-23 23:00:00', 'America/Sao_Paulo'));
+
+    Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Night Camera',
+        'stream_url' => 'http://camera.local/night',
+        'is_active' => true,
+        'motion_detection_enabled' => true,
+        'monitoring_starts_at' => '22:00',
+        'monitoring_ends_at' => '06:00',
+    ]);
+
+    Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Early Morning Camera',
+        'stream_url' => 'http://camera.local/early-morning',
+        'is_active' => true,
+        'motion_detection_enabled' => true,
+        'monitoring_starts_at' => '02:00',
+        'monitoring_ends_at' => '06:00',
+    ]);
+
+    $this->withToken('test-processor-token')
+        ->getJson('/api/processor/cameras')
+        ->assertOk()
+        ->assertJsonPath('data.0.name', 'Night Camera')
+        ->assertJsonMissing(['name' => 'Early Morning Camera']);
 });
 
 test('processor can register a video recording', function () {

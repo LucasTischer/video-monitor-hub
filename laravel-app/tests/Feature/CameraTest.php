@@ -76,9 +76,18 @@ test('authenticated users can create cameras', function () {
             'motion_detection_enabled' => '1',
             'record_after_motion_seconds' => '5',
             'pre_motion_buffer_seconds' => '2',
+            'monitoring_starts_at' => '08:00',
+            'monitoring_ends_at' => '18:00',
             'recording_retention_days' => '30',
         ])
         ->assertRedirect('/cameras');
+
+    $camera = Camera::where('user_id', $user->id)
+        ->where('name', 'Back Yard')
+        ->first();
+
+    expect(substr($camera->monitoring_starts_at, 0, 5))->toBe('08:00')
+        ->and(substr($camera->monitoring_ends_at, 0, 5))->toBe('18:00');
 
     $this->assertDatabaseHas('cameras', [
         'user_id' => $user->id,
@@ -135,9 +144,16 @@ test('authenticated users can update their cameras', function () {
             'motion_detection_enabled' => '0',
             'record_after_motion_seconds' => '10',
             'pre_motion_buffer_seconds' => '5',
+            'monitoring_starts_at' => '22:00',
+            'monitoring_ends_at' => '06:00',
             'recording_retention_days' => '7',
         ])
         ->assertRedirect('/cameras');
+
+    $camera->refresh();
+
+    expect(substr($camera->monitoring_starts_at, 0, 5))->toBe('22:00')
+        ->and(substr($camera->monitoring_ends_at, 0, 5))->toBe('06:00');
 
     $this->assertDatabaseHas('cameras', [
         'id' => $camera->id,
@@ -150,6 +166,32 @@ test('authenticated users can update their cameras', function () {
         'pre_motion_buffer_seconds' => 5,
         'recording_retention_days' => 7,
     ]);
+});
+
+test('camera creation requires a complete monitoring window', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/cameras', [
+            'name' => 'Back Yard',
+            'stream_url' => 'http://camera.local/back-yard',
+            'monitoring_starts_at' => '08:00',
+            'monitoring_ends_at' => '',
+        ])
+        ->assertSessionHasErrors(['monitoring_ends_at']);
+});
+
+test('camera creation rejects equal monitoring window times', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/cameras', [
+            'name' => 'Back Yard',
+            'stream_url' => 'http://camera.local/back-yard',
+            'monitoring_starts_at' => '08:00',
+            'monitoring_ends_at' => '08:00',
+        ])
+        ->assertSessionHasErrors(['monitoring_ends_at']);
 });
 
 test('camera creation validates motion recording settings', function () {

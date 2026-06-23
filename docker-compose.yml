@@ -14,6 +14,7 @@ services:
       - "8000:80"
     environment:
       DB_TEST_DATABASE: ${DB_TEST_DATABASE:-video_monitor_test}
+      APP_TIMEZONE: ${APP_TIMEZONE:-America/Sao_Paulo}
       PROCESSOR_API_TOKEN: ${PROCESSOR_API_TOKEN:-local-dev-processor-token}
       XDEBUG_MODE: ${XDEBUG_MODE:-debug,develop}
       XDEBUG_START_WITH_REQUEST: ${XDEBUG_START_WITH_REQUEST:-yes}
@@ -39,6 +40,7 @@ services:
       - shared-videos:/var/www/html/storage/app/public/videos
     environment:
       DB_TEST_DATABASE: ${DB_TEST_DATABASE:-video_monitor_test}
+      APP_TIMEZONE: ${APP_TIMEZONE:-America/Sao_Paulo}
       PROCESSOR_API_TOKEN: ${PROCESSOR_API_TOKEN:-local-dev-processor-token}
       XDEBUG_MODE: ${XDEBUG_MODE:-off}
     depends_on:
