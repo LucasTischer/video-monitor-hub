@@ -6,7 +6,7 @@ Video Monitor Hub is designed to help users manage camera streams and review vid
 
 - A Laravel web application for authentication, camera management, recording listing, and video playback.
 - A Python processor that uses OpenCV to detect motion, record videos, and register recordings through Laravel's processor API.
-- A PostgreSQL database used by Laravel for users, cameras, and recording metadata.
+- A PostgreSQL database used by Laravel for users, app settings, cameras, sharing rules, and recording metadata.
 
 ## System Components
 
@@ -15,11 +15,12 @@ Video Monitor Hub is designed to help users manage camera streams and review vid
 The Laravel application is responsible for the user interface and database-backed management features. It handles:
 
 - User authentication.
+- Admin-only application settings.
 - Camera CRUD operations.
 - Camera sharing and role-based access control.
 - Listing recent motion recordings.
 - Playing recorded videos in the browser.
-- Navigation between the dashboard, camera management, video management, profile, and logout actions.
+- Navigation between the dashboard, camera management, video management, settings, profile, and logout actions.
 
 Current location:
 
@@ -29,7 +30,7 @@ laravel-app/
 
 ### Python Processor
 
-The Python processor is responsible for camera stream processing. It retrieves active camera records from Laravel's internal API, connects to each camera stream URL, detects motion, saves video recordings, and posts saved recording metadata back to Laravel.
+The Python processor is responsible for camera stream processing. It retrieves currently processable camera records from Laravel's internal API, connects to each camera stream URL, detects motion, saves video recordings, and posts saved recording metadata back to Laravel.
 
 Current location:
 
@@ -59,11 +60,12 @@ Current Python modules:
 
 ### Database
 
-The database stores users, cameras, camera sharing rules, and video recording metadata. In Docker, the project uses PostgreSQL 16.
+The database stores users, app settings, cameras, camera sharing rules, and video recording metadata. In Docker, the project uses PostgreSQL 16.
 
 Current main entities:
 
 - Users
+- App settings
 - Cameras
 - Camera shares
 - Videos
@@ -88,6 +90,18 @@ If the visitor does not have an account, they can open the registration form and
 
 If a login or registration error occurs, the interface displays an alert with the corresponding error message.
 
+Users can have the `is_admin` flag. Admin users can access the Settings page and update the global application timezone. The demo user is seeded as an admin so a fresh local installation has an account that can manage app settings.
+
+### Application Settings
+
+Global application settings are stored in `app_settings`. The current setting is:
+
+```text
+timezone  Timezone used by monitoring windows and processor timestamps
+```
+
+When no database setting exists, Laravel falls back to `APP_TIMEZONE` from configuration. In local Docker development this defaults to `America/Sao_Paulo`.
+
 ### Camera Management
 
 After authentication, the dashboard and camera pages list cameras owned by the current user and cameras shared with the current user.
@@ -106,6 +120,11 @@ The add camera action opens a form containing:
 - Stream URL
 - Optional location
 - Active/inactive status
+- Motion detection enabled/disabled
+- Recording retention
+- Seconds to keep recording after motion stops
+- Pre-motion buffer seconds
+- Optional daily monitoring start and end time
 
 After the user saves the form, the new camera appears in the camera list and can be picked up by the Python processor when active.
 
@@ -115,10 +134,27 @@ The edit camera action opens a form populated with the selected camera data. The
 - Stream URL
 - Optional location
 - Active/inactive status
+- Motion detection enabled/disabled
+- Recording retention
+- Seconds to keep recording after motion stops
+- Pre-motion buffer seconds
+- Optional daily monitoring start and end time
 
 After saving, the camera data is updated in Laravel and becomes available to the processor API.
 
 The delete camera action removes the selected camera and its related videos/shares when the user is allowed to delete it.
+
+Camera timing settings:
+
+```text
+recording_retention_days       null keeps recordings forever; N deletes recordings older than N days.
+record_after_motion_seconds    Seconds to continue recording after motion stops.
+pre_motion_buffer_seconds      Seconds of buffered frames to include before detected motion.
+monitoring_starts_at           Optional daily monitoring window start time.
+monitoring_ends_at             Optional daily monitoring window end time.
+```
+
+Both monitoring window fields must be filled together or left blank together. Blank monitoring window values mean the camera can be monitored all day. A start time later than the end time represents an overnight window, such as `22:00` to `06:00`.
 
 ### Camera Sharing
 
@@ -161,6 +197,7 @@ The menu includes:
 - Dashboard: returns the authenticated user to the summary page.
 - Cameras: opens camera management.
 - Videos: opens video recording management.
+- Settings: opens admin-only application settings.
 - Profile: opens the Breeze profile page.
 - Logout: ends the current session and returns the user to the public authentication flow.
 
@@ -170,9 +207,9 @@ The motion detection script should run on the user's computer or in the Python p
 
 Expected processing flow:
 
-1. Retrieve active camera data from Laravel through `GET /api/processor/cameras`.
+1. Retrieve currently eligible camera data from Laravel through `GET /api/processor/cameras`.
 2. Start one camera worker for each active camera that is not already running.
-3. Stop workers for cameras that are no longer active.
+3. Stop workers for cameras that are no longer returned by Laravel or whose configuration changed.
 4. Open each camera stream using its access URL.
 5. Capture frames continuously.
 6. Resize each frame to 720 pixels.
@@ -189,16 +226,18 @@ When motion is detected, the recording process starts.
 
 Expected recording flow:
 
-1. Start writing frames to a video file.
+1. Start writing buffered pre-motion frames and live frames to a video file.
 2. Continue recording while motion is present.
-3. Stop recording only after no movement is detected for the configured number of frames.
+3. Stop recording only after no movement is detected for the configured `record_after_motion_seconds`.
 4. Save the video file as WebM in the processor output directory.
 5. Register the recording in Laravel through `POST /api/processor/videos`.
-6. Store the camera, filename, public path, timestamps, duration, motion flag, and metadata in Laravel.
+6. Store the camera, filename, public path, timezone-aware timestamps, duration, motion flag, and metadata in Laravel.
+
+The processor receives the application timezone from Laravel and uses it when creating clip filenames and `started_at` / `ended_at` metadata.
 
 ## Docker Services
 
-The project defines three Docker services:
+The project defines four Docker services:
 
 ```text
 laravel-app       Laravel application served by Apache/PHP
@@ -238,15 +277,15 @@ Artisan commands should be run through `./bin/artisan` during local development.
 The wrapper executes the command inside the Laravel container as the host user,
 which prevents generated files from being owned by the container user.
 
-The default seeder creates a demo user, inactive demo cameras, playable WebM recording placeholders, and recording metadata. Demo cameras are inactive by default so the processor does not attempt to connect to placeholder stream URLs.
+The default seeder creates an admin demo user, inactive demo cameras, playable WebM recording placeholders, and recording metadata. Demo cameras are inactive by default so the processor does not attempt to connect to placeholder stream URLs.
 
 The shared Docker volume `shared-videos` is intended to connect generated Python recordings with storage accessible by the Laravel application.
 
 The current integration flow is:
 
-1. Laravel exposes active cameras at `GET /api/processor/cameras`.
+1. Laravel exposes currently processable cameras at `GET /api/processor/cameras`.
 2. The Python processor calls that endpoint using the shared `PROCESSOR_API_TOKEN`.
-3. Python starts or stops camera workers to match the active camera list.
+3. Python starts, stops, or restarts camera workers to match the returned camera list and settings.
 4. Each worker writes finished clips to `/app/storage/videos`.
 5. Docker mounts that same volume into Laravel at `storage/app/public/videos`.
 6. Python registers the clip metadata with `POST /api/processor/videos`.
@@ -309,6 +348,31 @@ To use the debugger, start the `Listen for Xdebug` launch configuration in VS Co
 
 ## Current Data Model
 
+### Users
+
+Current fields:
+
+- `id`
+- `name`
+- `email`
+- `email_verified_at`
+- `password`
+- `is_admin`
+- `remember_token`
+- `created_at`
+- `updated_at`
+
+### App Settings
+
+Current fields:
+
+- `id`
+- `timezone`
+- `created_at`
+- `updated_at`
+
+`app_settings.timezone` stores the global application timezone. If the setting is missing, Laravel falls back to `APP_TIMEZONE`.
+
 ### Cameras
 
 Current fields:
@@ -319,6 +383,12 @@ Current fields:
 - `stream_url`
 - `location`
 - `is_active`
+- `motion_detection_enabled`
+- `record_after_motion_seconds`
+- `pre_motion_buffer_seconds`
+- `monitoring_starts_at`
+- `monitoring_ends_at`
+- `recording_retention_days`
 - `created_at`
 - `updated_at`
 
@@ -353,7 +423,7 @@ The table enforces a unique `camera_id` and `user_id` pair so the same camera ca
 
 ## Implementation Status Notes
 
-The current repository already includes the Laravel authentication scaffold, Docker services, a Python processor container, the initial camera/video database tables, and an authenticated dashboard.
+The current repository already includes the Laravel authentication scaffold, Docker services, a Python processor container, the current application database tables, and an authenticated dashboard.
 
 Implemented Laravel screens:
 
@@ -371,6 +441,11 @@ Implemented Laravel screens:
 - Multi-camera processor workers.
 - WebM recording output for browser playback.
 - Camera-level recording retention and scheduled expired recording cleanup.
+- Camera-level motion detection enable/disable.
+- Camera-level pre-motion buffer and record-after-motion timing.
+- Camera-level daily monitoring windows.
+- Admin users and admin-only global timezone settings.
+- Processor timezone-aware filenames and recording timestamps.
 - Separate PostgreSQL test database.
 - Demo seed data with a demo user, cameras, and playable placeholder recordings.
 

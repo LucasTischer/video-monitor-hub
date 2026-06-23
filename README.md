@@ -8,10 +8,12 @@ This project is a portfolio rebuild of an older PHP/Python video monitoring appl
 
 - User registration, login, profile management, and logout through Laravel Breeze.
 - Authenticated camera CRUD with ownership and shared-access policies.
+- Camera-level monitoring settings for retention, motion timing, active windows, and motion detection.
 - Camera sharing with viewer, editor, and manager roles.
 - Dashboard with camera and recording metrics.
 - Video recording list and detail pages.
 - Browser playback for new WebM recordings.
+- Admin-only application settings for the global timezone.
 - Python/OpenCV motion detection pipeline.
 - Python processor integration with Laravel through internal API endpoints.
 - Shared Docker storage for generated recordings.
@@ -57,11 +59,11 @@ Shared Docker Volume
 Laravel public storage: /storage/videos/{filename}
 ```
 
-Laravel is the control center. It owns users, cameras, videos, validation, authorization, and the browser UI.
+Laravel is the control center. It owns users, app settings, cameras, videos, validation, authorization, and the browser UI.
 
 Camera authorization is centered on the camera record. Each camera has one owner through `cameras.user_id` and can also be shared with other users through `camera_shares`. Video access inherits the camera permissions, so users can only list, view, or delete recordings when they have the required access to the related camera.
 
-The Python processor is the worker. It asks Laravel for active cameras, processes each stream with OpenCV, saves recordings, and reports completed clips back to Laravel.
+The Python processor is the worker. It asks Laravel for currently processable cameras, processes each stream with OpenCV, saves recordings, and reports completed clips back to Laravel.
 
 Docker connects the services on an internal network. The Python container talks to Laravel at:
 
@@ -144,6 +146,8 @@ Email: demo@example.com
 Password: password
 ```
 
+The demo user is an admin, so it can access the Settings page.
+
 PostgreSQL is exposed on port `5432`.
 
 Default database values:
@@ -203,7 +207,7 @@ It executes scheduled Laravel commands, including:
 videos:prune-expired
 ```
 
-That command runs daily and deletes expired recordings according to each camera's recording retention setting.
+That command runs daily and deletes expired recordings according to each camera's recording retention setting. A camera with `recording_retention_days` left blank keeps recordings forever; a camera with a value deletes recordings older than that number of days.
 
 Inspect scheduled tasks:
 
@@ -226,6 +230,16 @@ The database seeder creates:
 - three playable WebM demo recordings.
 
 Demo cameras are inactive by default so the Python processor does not try to connect to fake stream URLs. Activate a camera and replace its stream URL when you want the processor to handle a real source.
+
+## Application Settings
+
+Admin users can open the Settings page to choose the global application timezone. The timezone is stored in `app_settings` and falls back to `APP_TIMEZONE` when no database setting exists.
+
+The timezone is used for camera monitoring windows and for processor-generated recording timestamps. In local Docker development, `APP_TIMEZONE` defaults to:
+
+```text
+America/Sao_Paulo
+```
 
 ## Camera Sharing
 
@@ -250,6 +264,16 @@ GET  /api/processor/cameras
 POST /api/processor/videos
 ```
 
+`GET /api/processor/cameras` only returns cameras that are active, have motion detection enabled, and are currently inside their configured monitoring window. Cameras without a monitoring window are available all day.
+
+Camera settings returned to the processor include:
+
+```text
+record_after_motion_seconds  Seconds to keep recording after motion stops
+pre_motion_buffer_seconds    Seconds of buffered video to include before motion
+timezone                     Application timezone for filenames and timestamps
+```
+
 Processing flow:
 
 1. User creates and activates a camera in Laravel.
@@ -257,7 +281,7 @@ Processing flow:
 3. Python starts one worker thread per active camera.
 4. Each worker opens its camera stream.
 5. OpenCV detects meaningful frame changes.
-6. Python saves a WebM recording when motion stops.
+6. Python saves a WebM recording using the camera timing settings.
 7. Python calls `POST /api/processor/videos`.
 8. Laravel stores the recording metadata in PostgreSQL.
 9. The user reviews the recording in Laravel.
@@ -291,7 +315,7 @@ Watch processor logs:
 docker compose logs -f python-processor
 ```
 
-The normal Laravel-driven flow uses active cameras from the database, so `PROCESSOR_CAMERA_URL` is mainly useful as a fallback/debug path.
+The normal Laravel-driven flow uses currently processable cameras from Laravel, so `PROCESSOR_CAMERA_URL` is mainly useful as a fallback/debug path.
 
 The processor refreshes Laravel camera configuration every 10 seconds by default. Override this with:
 
@@ -366,11 +390,15 @@ Implemented:
 - Laravel Breeze authentication.
 - Camera CRUD.
 - Camera sharing with viewer/editor/manager roles.
+- Admin users and admin-only application settings.
 - Policy-based camera and video authorization.
 - Video management pages.
 - Dashboard metrics.
+- Camera retention, motion timing, monitoring window, and motion detection settings.
+- Global timezone configuration with `APP_TIMEZONE` fallback.
 - Python motion detector and clip writer.
 - Python-to-Laravel API integration.
+- Processor timezone-aware recording filenames and timestamps.
 - Shared video storage.
 - Browser-compatible WebM recording output.
 - Scheduled expired recording cleanup.
