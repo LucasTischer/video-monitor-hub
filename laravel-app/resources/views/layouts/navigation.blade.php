@@ -24,6 +24,11 @@
                     <x-nav-link :href="route('videos.index')" :active="request()->routeIs('videos.*')">
                         {{ __('Videos') }}
                     </x-nav-link>
+                    @if (Auth::user()->is_admin)
+                        <x-nav-link :href="route('settings.edit')" :active="request()->routeIs('settings.*')">
+                            {{ __('Settings') }}
+                        </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -85,6 +90,11 @@
             <x-responsive-nav-link :href="route('videos.index')" :active="request()->routeIs('videos.*')">
                 {{ __('Videos') }}
             </x-responsive-nav-link>
+            @if (Auth::user()->is_admin)
+                <x-responsive-nav-link :href="route('settings.edit')" :active="request()->routeIs('settings.*')">
+                    {{ __('Settings') }}
+                </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

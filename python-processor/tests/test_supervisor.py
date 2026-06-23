@@ -89,6 +89,29 @@ def test_supervisor_stops_workers_for_removed_cameras():
     assert 2 not in supervisor.workers
 
 
+def test_supervisor_restarts_workers_when_camera_settings_change():
+    supervisor = ProcessorSupervisor(
+        output_directory="/app/storage/videos",
+        worker_factory=FakeWorker,
+    )
+
+    supervisor.sync_cameras([camera(1)])
+    original_worker = FakeWorker.created[0]
+
+    changed_camera = ProcessorCamera(
+        id=1,
+        name="Camera 1",
+        stream_url="http://camera.local/1",
+        timezone="America/Sao_Paulo",
+    )
+
+    supervisor.sync_cameras([changed_camera])
+
+    assert original_worker.stopped is True
+    assert len(FakeWorker.created) == 2
+    assert FakeWorker.created[1].camera == changed_camera
+
+
 def test_supervisor_removes_finished_workers():
     supervisor = ProcessorSupervisor(
         output_directory="/app/storage/videos",

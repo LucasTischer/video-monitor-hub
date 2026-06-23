@@ -1,6 +1,7 @@
 import datetime as dt
 from dataclasses import dataclass
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import cv2
 
@@ -30,10 +31,12 @@ class StreamProcessor:
         fps: int = 20,
         quiet_frames_to_stop: int = 32,
         pre_motion_buffer_frames: int | None = None,
+        timezone: str = "UTC",
         capture_factory=cv2.VideoCapture,
     ) -> None:
         self.stream_url = stream_url
         self.output_directory = Path(output_directory)
+        self.timezone = ZoneInfo(timezone)
         self.detector = detector or MotionDetector()
         self.pre_motion_buffer_frames = (
             quiet_frames_to_stop
@@ -96,7 +99,7 @@ class StreamProcessor:
 
     def start_recording(self) -> Path:
         self.output_directory.mkdir(parents=True, exist_ok=True)
-        self.recording_started_at = dt.datetime.now()
+        self.recording_started_at = dt.datetime.now(self.timezone)
         output_path = self.output_directory / f"{self.recording_started_at:%Y%m%d-%H%M%S}.{self.output_extension}"
         fourcc = cv2.VideoWriter_fourcc(*self.codec)
 
@@ -106,7 +109,7 @@ class StreamProcessor:
         return output_path
 
     def finish_recording(self) -> SavedClip:
-        ended_at = dt.datetime.now()
+        ended_at = dt.datetime.now(self.timezone)
         started_at = self.recording_started_at or ended_at
         duration_seconds = max(0, int((ended_at - started_at).total_seconds()))
         output_path = self.current_output_path or Path("")

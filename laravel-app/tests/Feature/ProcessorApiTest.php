@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Camera;
+use App\Models\AppSetting;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 
@@ -55,6 +56,7 @@ test('processor can list active cameras', function () {
         ->assertJsonPath('data.0.name', 'Front Gate')
         ->assertJsonPath('data.0.record_after_motion_seconds', 5)
         ->assertJsonPath('data.0.pre_motion_buffer_seconds', 2)
+        ->assertJsonPath('data.0.timezone', 'America/Sao_Paulo')
         ->assertJsonMissing(['name' => 'Inactive Camera'])
         ->assertJsonMissing(['name' => 'Detection Disabled Camera']);
 });
@@ -138,6 +140,42 @@ test('processor filters cameras by overnight monitoring windows', function () {
         ->assertOk()
         ->assertJsonPath('data.0.name', 'Night Camera')
         ->assertJsonMissing(['name' => 'Early Morning Camera']);
+});
+
+test('processor uses database timezone setting when filtering monitoring windows', function () {
+    $user = User::factory()->create();
+
+    AppSetting::create([
+        'timezone' => 'Asia/Tokyo',
+    ]);
+
+    Carbon::setTestNow(Carbon::parse('2026-06-23 00:30:00', 'UTC'));
+
+    Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Tokyo Morning Camera',
+        'stream_url' => 'http://camera.local/tokyo-morning',
+        'is_active' => true,
+        'motion_detection_enabled' => true,
+        'monitoring_starts_at' => '09:00',
+        'monitoring_ends_at' => '10:00',
+    ]);
+
+    Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Sao Paulo Morning Camera',
+        'stream_url' => 'http://camera.local/sao-paulo-morning',
+        'is_active' => true,
+        'motion_detection_enabled' => true,
+        'monitoring_starts_at' => '21:00',
+        'monitoring_ends_at' => '22:00',
+    ]);
+
+    $this->withToken('test-processor-token')
+        ->getJson('/api/processor/cameras')
+        ->assertOk()
+        ->assertJsonPath('data.0.name', 'Tokyo Morning Camera')
+        ->assertJsonMissing(['name' => 'Sao Paulo Morning Camera']);
 });
 
 test('processor can register a video recording', function () {

@@ -33,6 +33,7 @@ def test_active_cameras_maps_laravel_response(monkeypatch):
                     "location": "Entrance",
                     "record_after_motion_seconds": 5,
                     "pre_motion_buffer_seconds": 2,
+                    "timezone": "America/Sao_Paulo",
                 }
             ]
         })
@@ -47,6 +48,7 @@ def test_active_cameras_maps_laravel_response(monkeypatch):
     assert cameras[0].stream_url == "http://camera.local/front"
     assert cameras[0].record_after_motion_seconds == 5
     assert cameras[0].pre_motion_buffer_seconds == 2
+    assert cameras[0].timezone == "America/Sao_Paulo"
 
 
 def test_register_video_posts_saved_clip_payload(monkeypatch):

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AppSetting;
 use App\Models\Camera;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ class ProcessorCameraController extends Controller
     public function index(Request $request): JsonResponse
     {
         $this->authorizeProcessor($request);
+
+        $timezone = AppSetting::currentTimezone();
 
         $cameras = Camera::query()
             ->where('is_active', true)
@@ -26,6 +29,16 @@ class ProcessorCameraController extends Controller
                 'motion_detection_enabled',
                 'record_after_motion_seconds',
                 'pre_motion_buffer_seconds',
+            ])
+            ->map(fn (Camera $camera): array => [
+                'id' => $camera->id,
+                'name' => $camera->name,
+                'stream_url' => $camera->stream_url,
+                'location' => $camera->location,
+                'motion_detection_enabled' => $camera->motion_detection_enabled,
+                'record_after_motion_seconds' => $camera->record_after_motion_seconds,
+                'pre_motion_buffer_seconds' => $camera->pre_motion_buffer_seconds,
+                'timezone' => $timezone,
             ]);
 
         return response()->json([

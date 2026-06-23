@@ -23,6 +23,7 @@ class ProcessorSupervisor:
         active_camera_ids = {camera.id for camera in cameras}
 
         self._remove_finished_workers()
+        self._stop_changed_workers(cameras)
         self._stop_missing_workers(active_camera_ids)
 
         for camera in cameras:
@@ -54,5 +55,13 @@ class ProcessorSupervisor:
     def _stop_missing_workers(self, active_camera_ids: set[int]) -> None:
         for camera_id, worker in list(self.workers.items()):
             if camera_id not in active_camera_ids:
+                worker.stop()
+                del self.workers[camera_id]
+
+    def _stop_changed_workers(self, cameras: list[ProcessorCamera]) -> None:
+        cameras_by_id = {camera.id: camera for camera in cameras}
+
+        for camera_id, worker in list(self.workers.items()):
+            if camera_id in cameras_by_id and worker.camera != cameras_by_id[camera_id]:
                 worker.stop()
                 del self.workers[camera_id]

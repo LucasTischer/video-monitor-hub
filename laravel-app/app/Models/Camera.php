@@ -58,7 +58,8 @@ class Camera extends Model
 
     public function scopeCurrentlyMonitorable(Builder $query, ?Carbon $now = null): Builder
     {
-        $currentTime = ($now ?? now(config('app.timezone')))->format('H:i:s');
+        $timezone = AppSetting::currentTimezone();
+        $currentTime = ($now ? $now->copy()->setTimezone($timezone) : now($timezone))->format('H:i:s');
 
         return $query->where(function (Builder $query) use ($currentTime): void {
             $query->where(function (Builder $query): void {

@@ -66,6 +66,7 @@ def test_camera_worker_passes_recording_settings_to_processor():
         stream_url="http://camera.local/side",
         record_after_motion_seconds=5,
         pre_motion_buffer_seconds=2,
+        timezone="America/Sao_Paulo",
     )
     worker = CameraWorker(
         camera=camera,
@@ -80,6 +81,7 @@ def test_camera_worker_passes_recording_settings_to_processor():
     assert worker.last_error is None
     assert processor.kwargs["quiet_frames_to_stop"] == 100
     assert processor.kwargs["pre_motion_buffer_frames"] == 40
+    assert processor.kwargs["timezone"] == "America/Sao_Paulo"
 
 
 def test_camera_worker_captures_processor_errors():

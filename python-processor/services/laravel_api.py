@@ -12,6 +12,7 @@ class ProcessorCamera:
     location: str | None = None
     record_after_motion_seconds: int = 2
     pre_motion_buffer_seconds: int = 2
+    timezone: str = "UTC"
 
 
 class LaravelApiClient:
@@ -36,6 +37,7 @@ class LaravelApiClient:
                 location=camera.get("location"),
                 record_after_motion_seconds=camera.get("record_after_motion_seconds", 2),
                 pre_motion_buffer_seconds=camera.get("pre_motion_buffer_seconds", 2),
+                timezone=camera.get("timezone", "UTC"),
             )
             for camera in response.json()["data"]
         ]

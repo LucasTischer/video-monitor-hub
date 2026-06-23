@@ -47,6 +47,7 @@ class CameraWorker(Thread):
             fps=PROCESSOR_FPS,
             quiet_frames_to_stop=max(1, self.camera.record_after_motion_seconds * PROCESSOR_FPS),
             pre_motion_buffer_frames=max(1, self.camera.pre_motion_buffer_seconds * PROCESSOR_FPS),
+            timezone=self.camera.timezone,
         )
 
         print(f"Processing camera {self.camera.id}: {self.camera.name}", flush=True)

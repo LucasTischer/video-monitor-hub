@@ -100,6 +100,23 @@ def test_stream_processor_can_use_a_custom_output_extension(tmp_path):
     assert clip_writer.started_paths[0].endswith(".avi")
 
 
+def test_stream_processor_uses_configured_timezone_for_recording_times(tmp_path):
+    clip_writer = FakeClipWriter()
+    processor = StreamProcessor(
+        stream_url="http://camera.local/video",
+        output_directory=tmp_path,
+        detector=FakeDetector([True]),
+        clip_writer=clip_writer,
+        timezone="America/Sao_Paulo",
+    )
+
+    processor.process_frame(make_frame())
+    saved_clip = processor.finish_recording()
+
+    assert saved_clip.started_at.tzinfo is not None
+    assert saved_clip.started_at.tzinfo.key == "America/Sao_Paulo"
+
+
 def test_stream_processor_uses_separate_pre_motion_buffer_size(tmp_path):
     processor = StreamProcessor(
         stream_url="http://camera.local/video",
