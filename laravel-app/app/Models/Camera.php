@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
 
-#[Fillable(['user_id', 'name', 'stream_url', 'location', 'is_active', 'motion_detection_enabled', 'record_after_motion_seconds', 'pre_motion_buffer_seconds', 'monitoring_starts_at', 'monitoring_ends_at', 'recording_retention_days'])]
+#[Fillable(['user_id', 'name', 'stream_url', 'location', 'is_active', 'motion_detection_enabled', 'record_after_motion_seconds', 'pre_motion_buffer_seconds', 'recording_resolution_height', 'recording_fps', 'monitoring_starts_at', 'monitoring_ends_at', 'recording_retention_days'])]
 class Camera extends Model
 {
     use HasFactory;
@@ -19,6 +19,8 @@ class Camera extends Model
     public const DEFAULT_RECORD_AFTER_MOTION_SECONDS = 2;
 
     public const DEFAULT_PRE_MOTION_BUFFER_SECONDS = 2;
+
+    public const DEFAULT_RECORDING_FPS = 20;
 
     public function user(): BelongsTo
     {
@@ -37,6 +39,8 @@ class Camera extends Model
             'motion_detection_enabled' => 'boolean',
             'record_after_motion_seconds' => 'integer',
             'pre_motion_buffer_seconds' => 'integer',
+            'recording_resolution_height' => 'integer',
+            'recording_fps' => 'integer',
             'recording_retention_days' => 'integer',
         ];
     }

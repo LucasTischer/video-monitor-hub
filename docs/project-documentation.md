@@ -124,6 +124,8 @@ The add camera action opens a form containing:
 - Recording retention
 - Seconds to keep recording after motion stops
 - Pre-motion buffer seconds
+- Recording resolution
+- Recording FPS
 - Optional daily monitoring start and end time
 
 After the user saves the form, the new camera appears in the camera list and can be picked up by the Python processor when active.
@@ -138,6 +140,8 @@ The edit camera action opens a form populated with the selected camera data. The
 - Recording retention
 - Seconds to keep recording after motion stops
 - Pre-motion buffer seconds
+- Recording resolution
+- Recording FPS
 - Optional daily monitoring start and end time
 
 After saving, the camera data is updated in Laravel and becomes available to the processor API.
@@ -150,6 +154,8 @@ Camera timing settings:
 recording_retention_days       null keeps recordings forever; N deletes recordings older than N days.
 record_after_motion_seconds    Seconds to continue recording after motion stops.
 pre_motion_buffer_seconds      Seconds of buffered frames to include before detected motion.
+recording_resolution_height    Optional output height; null keeps the original source resolution.
+recording_fps                  Output video frame rate used by the generated clip.
 monitoring_starts_at           Optional daily monitoring window start time.
 monitoring_ends_at             Optional daily monitoring window end time.
 ```
@@ -286,7 +292,7 @@ The current integration flow is:
 1. Laravel exposes currently processable cameras at `GET /api/processor/cameras`.
 2. The Python processor calls that endpoint using the shared `PROCESSOR_API_TOKEN`.
 3. Python starts, stops, or restarts camera workers to match the returned camera list and settings.
-4. Each worker writes finished clips to `/app/storage/videos`.
+4. Each worker writes finished clips to `/app/storage/videos` using the camera's recording resolution and FPS settings.
 5. Docker mounts that same volume into Laravel at `storage/app/public/videos`.
 6. Python registers the clip metadata with `POST /api/processor/videos`.
 7. Laravel stores a `videos` row containing the camera, filename, public path, timestamps, duration, and metadata.
@@ -386,6 +392,8 @@ Current fields:
 - `motion_detection_enabled`
 - `record_after_motion_seconds`
 - `pre_motion_buffer_seconds`
+- `recording_resolution_height`
+- `recording_fps`
 - `monitoring_starts_at`
 - `monitoring_ends_at`
 - `recording_retention_days`
@@ -443,6 +451,7 @@ Implemented Laravel screens:
 - Camera-level recording retention and scheduled expired recording cleanup.
 - Camera-level motion detection enable/disable.
 - Camera-level pre-motion buffer and record-after-motion timing.
+- Camera-level recording resolution and FPS settings.
 - Camera-level daily monitoring windows.
 - Admin users and admin-only global timezone settings.
 - Processor timezone-aware filenames and recording timestamps.

@@ -76,6 +76,8 @@ test('authenticated users can create cameras', function () {
             'motion_detection_enabled' => '1',
             'record_after_motion_seconds' => '5',
             'pre_motion_buffer_seconds' => '2',
+            'recording_resolution_height' => '720',
+            'recording_fps' => '15',
             'monitoring_starts_at' => '08:00',
             'monitoring_ends_at' => '18:00',
             'recording_retention_days' => '30',
@@ -98,6 +100,8 @@ test('authenticated users can create cameras', function () {
         'motion_detection_enabled' => true,
         'record_after_motion_seconds' => 5,
         'pre_motion_buffer_seconds' => 2,
+        'recording_resolution_height' => 720,
+        'recording_fps' => 15,
         'recording_retention_days' => 30,
     ]);
 });
@@ -144,6 +148,8 @@ test('authenticated users can update their cameras', function () {
             'motion_detection_enabled' => '0',
             'record_after_motion_seconds' => '10',
             'pre_motion_buffer_seconds' => '5',
+            'recording_resolution_height' => '',
+            'recording_fps' => '30',
             'monitoring_starts_at' => '22:00',
             'monitoring_ends_at' => '06:00',
             'recording_retention_days' => '7',
@@ -164,6 +170,8 @@ test('authenticated users can update their cameras', function () {
         'motion_detection_enabled' => false,
         'record_after_motion_seconds' => 10,
         'pre_motion_buffer_seconds' => 5,
+        'recording_resolution_height' => null,
+        'recording_fps' => 30,
         'recording_retention_days' => 7,
     ]);
 });
@@ -205,6 +213,19 @@ test('camera creation validates motion recording settings', function () {
             'pre_motion_buffer_seconds' => '31',
         ])
         ->assertSessionHasErrors(['record_after_motion_seconds', 'pre_motion_buffer_seconds']);
+});
+
+test('camera creation validates recording quality settings', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->post('/cameras', [
+            'name' => 'Back Yard',
+            'stream_url' => 'http://camera.local/back-yard',
+            'recording_resolution_height' => '999',
+            'recording_fps' => '12',
+        ])
+        ->assertSessionHasErrors(['recording_resolution_height', 'recording_fps']);
 });
 
 test('authenticated users can update camera motion detection setting', function () {

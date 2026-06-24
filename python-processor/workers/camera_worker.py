@@ -5,8 +5,6 @@ from typing import Callable
 from motion.stream_processor import StreamProcessor
 from services.laravel_api import LaravelApiClient, ProcessorCamera
 
-PROCESSOR_FPS = 20
-
 
 class CameraWorker(Thread):
     """Run one camera stream processor in its own thread."""
@@ -44,9 +42,10 @@ class CameraWorker(Thread):
         processor = self.processor_factory(
             stream_url=self.camera.stream_url,
             output_directory=self.output_directory,
-            fps=PROCESSOR_FPS,
-            quiet_frames_to_stop=max(1, self.camera.record_after_motion_seconds * PROCESSOR_FPS),
-            pre_motion_buffer_frames=max(1, self.camera.pre_motion_buffer_seconds * PROCESSOR_FPS),
+            fps=self.camera.recording_fps,
+            quiet_frames_to_stop=max(1, self.camera.record_after_motion_seconds * self.camera.recording_fps),
+            pre_motion_buffer_frames=max(1, self.camera.pre_motion_buffer_seconds * self.camera.recording_fps),
+            recording_resolution_height=self.camera.recording_resolution_height,
             timezone=self.camera.timezone,
         )
 

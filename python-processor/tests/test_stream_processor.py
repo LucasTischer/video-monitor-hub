@@ -117,6 +117,39 @@ def test_stream_processor_uses_configured_timezone_for_recording_times(tmp_path)
     assert saved_clip.started_at.tzinfo.key == "America/Sao_Paulo"
 
 
+def test_stream_processor_resizes_recording_frames_to_configured_height(tmp_path):
+    clip_writer = FakeClipWriter()
+    processor = StreamProcessor(
+        stream_url="http://camera.local/video",
+        output_directory=tmp_path,
+        detector=FakeDetector([False]),
+        clip_writer=clip_writer,
+        recording_resolution_height=10,
+    )
+
+    processor.process_frame(make_frame())
+
+    recorded_frame = clip_writer.updated_frames[0]
+
+    assert recorded_frame.shape[:2] == (10, 16)
+
+
+def test_stream_processor_keeps_source_recording_size_without_configured_height(tmp_path):
+    clip_writer = FakeClipWriter()
+    processor = StreamProcessor(
+        stream_url="http://camera.local/video",
+        output_directory=tmp_path,
+        detector=FakeDetector([False]),
+        clip_writer=clip_writer,
+    )
+
+    processor.process_frame(make_frame())
+
+    recorded_frame = clip_writer.updated_frames[0]
+
+    assert recorded_frame.shape[:2] == (20, 30)
+
+
 def test_stream_processor_uses_separate_pre_motion_buffer_size(tmp_path):
     processor = StreamProcessor(
         stream_url="http://camera.local/video",

@@ -32,6 +32,8 @@ test('processor can list active cameras', function () {
         'motion_detection_enabled' => true,
         'record_after_motion_seconds' => 5,
         'pre_motion_buffer_seconds' => 2,
+        'recording_resolution_height' => 720,
+        'recording_fps' => 15,
     ]);
 
     Camera::create([
@@ -56,6 +58,8 @@ test('processor can list active cameras', function () {
         ->assertJsonPath('data.0.name', 'Front Gate')
         ->assertJsonPath('data.0.record_after_motion_seconds', 5)
         ->assertJsonPath('data.0.pre_motion_buffer_seconds', 2)
+        ->assertJsonPath('data.0.recording_resolution_height', 720)
+        ->assertJsonPath('data.0.recording_fps', 15)
         ->assertJsonPath('data.0.timezone', 'America/Sao_Paulo')
         ->assertJsonMissing(['name' => 'Inactive Camera'])
         ->assertJsonMissing(['name' => 'Detection Disabled Camera']);

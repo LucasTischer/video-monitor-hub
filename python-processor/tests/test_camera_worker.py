@@ -66,6 +66,8 @@ def test_camera_worker_passes_recording_settings_to_processor():
         stream_url="http://camera.local/side",
         record_after_motion_seconds=5,
         pre_motion_buffer_seconds=2,
+        recording_resolution_height=720,
+        recording_fps=10,
         timezone="America/Sao_Paulo",
     )
     worker = CameraWorker(
@@ -79,8 +81,10 @@ def test_camera_worker_passes_recording_settings_to_processor():
     processor = FakeProcessor.created[0]
 
     assert worker.last_error is None
-    assert processor.kwargs["quiet_frames_to_stop"] == 100
-    assert processor.kwargs["pre_motion_buffer_frames"] == 40
+    assert processor.kwargs["fps"] == 10
+    assert processor.kwargs["quiet_frames_to_stop"] == 50
+    assert processor.kwargs["pre_motion_buffer_frames"] == 20
+    assert processor.kwargs["recording_resolution_height"] == 720
     assert processor.kwargs["timezone"] == "America/Sao_Paulo"
 
 

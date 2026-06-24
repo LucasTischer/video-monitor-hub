@@ -96,6 +96,47 @@
     </div>
 </div>
 
+<div class="mt-4 grid gap-4 sm:grid-cols-2">
+    <div>
+        <x-input-label for="recording_resolution_height" :value="__('Recording resolution')" />
+        <select
+            id="recording_resolution_height"
+            name="recording_resolution_height"
+            class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+        >
+            <option value="" @selected(old('recording_resolution_height', $camera?->recording_resolution_height) === null)>{{ __('Original source') }}</option>
+            @foreach ([480, 720, 1080] as $height)
+                <option
+                    value="{{ $height }}"
+                    @selected((string) old('recording_resolution_height', $camera?->recording_resolution_height) === (string) $height)
+                >
+                    {{ $height }}p
+                </option>
+            @endforeach
+        </select>
+        <x-input-error class="mt-2" :messages="$errors->get('recording_resolution_height')" />
+    </div>
+
+    <div>
+        <x-input-label for="recording_fps" :value="__('Recording FPS')" />
+        <select
+            id="recording_fps"
+            name="recording_fps"
+            class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+        >
+            @foreach ([5, 10, 15, 20, 30] as $fps)
+                <option
+                    value="{{ $fps }}"
+                    @selected((int) old('recording_fps', $camera?->recording_fps ?? 20) === $fps)
+                >
+                    {{ __(':fps FPS', ['fps' => $fps]) }}
+                </option>
+            @endforeach
+        </select>
+        <x-input-error class="mt-2" :messages="$errors->get('recording_fps')" />
+    </div>
+</div>
+
 <div class="mt-4">
     <x-input-label :value="__('Monitoring window')" />
     <div class="mt-1 grid gap-4 sm:grid-cols-2">

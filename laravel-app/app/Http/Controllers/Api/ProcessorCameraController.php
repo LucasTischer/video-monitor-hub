@@ -29,6 +29,8 @@ class ProcessorCameraController extends Controller
                 'motion_detection_enabled',
                 'record_after_motion_seconds',
                 'pre_motion_buffer_seconds',
+                'recording_resolution_height',
+                'recording_fps',
             ])
             ->map(fn (Camera $camera): array => [
                 'id' => $camera->id,
@@ -38,6 +40,8 @@ class ProcessorCameraController extends Controller
                 'motion_detection_enabled' => $camera->motion_detection_enabled,
                 'record_after_motion_seconds' => $camera->record_after_motion_seconds,
                 'pre_motion_buffer_seconds' => $camera->pre_motion_buffer_seconds,
+                'recording_resolution_height' => $camera->recording_resolution_height,
+                'recording_fps' => $camera->recording_fps,
                 'timezone' => $timezone,
             ]);
 

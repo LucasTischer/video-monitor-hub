@@ -8,7 +8,7 @@ This project is a portfolio rebuild of an older PHP/Python video monitoring appl
 
 - User registration, login, profile management, and logout through Laravel Breeze.
 - Authenticated camera CRUD with ownership and shared-access policies.
-- Camera-level monitoring settings for retention, motion timing, active windows, and motion detection.
+- Camera-level monitoring settings for retention, motion timing, recording quality, active windows, and motion detection.
 - Camera sharing with viewer, editor, and manager roles.
 - Dashboard with camera and recording metrics.
 - Video recording list and detail pages.
@@ -271,6 +271,8 @@ Camera settings returned to the processor include:
 ```text
 record_after_motion_seconds  Seconds to keep recording after motion stops
 pre_motion_buffer_seconds    Seconds of buffered video to include before motion
+recording_resolution_height  Optional output height such as 480, 720, or 1080
+recording_fps                Output video frame rate
 timezone                     Application timezone for filenames and timestamps
 ```
 
@@ -281,7 +283,7 @@ Processing flow:
 3. Python starts one worker thread per active camera.
 4. Each worker opens its camera stream.
 5. OpenCV detects meaningful frame changes.
-6. Python saves a WebM recording using the camera timing settings.
+6. Python saves a WebM recording using the camera timing and quality settings.
 7. Python calls `POST /api/processor/videos`.
 8. Laravel stores the recording metadata in PostgreSQL.
 9. The user reviews the recording in Laravel.

@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Camera;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class StoreCameraRequest extends FormRequest
@@ -26,6 +27,8 @@ class StoreCameraRequest extends FormRequest
             'motion_detection_enabled' => ['boolean'],
             'record_after_motion_seconds' => ['required', 'integer', 'min:1', 'max:60'],
             'pre_motion_buffer_seconds' => ['required', 'integer', 'min:0', 'max:30'],
+            'recording_resolution_height' => ['nullable', 'integer', Rule::in([480, 720, 1080])],
+            'recording_fps' => ['required', 'integer', Rule::in([5, 10, 15, 20, 30])],
             'monitoring_starts_at' => ['nullable', 'required_with:monitoring_ends_at', 'date_format:H:i'],
             'monitoring_ends_at' => ['nullable', 'required_with:monitoring_starts_at', 'date_format:H:i'],
             'recording_retention_days' => ['nullable', 'integer', 'min:1', 'max:365'],
@@ -43,6 +46,12 @@ class StoreCameraRequest extends FormRequest
             'pre_motion_buffer_seconds' => $this->filled('pre_motion_buffer_seconds')
                 ? $this->input('pre_motion_buffer_seconds')
                 : Camera::DEFAULT_PRE_MOTION_BUFFER_SECONDS,
+            'recording_resolution_height' => $this->input('recording_resolution_height') === ''
+                ? null
+                : $this->input('recording_resolution_height'),
+            'recording_fps' => $this->filled('recording_fps')
+                ? $this->input('recording_fps')
+                : Camera::DEFAULT_RECORDING_FPS,
             'monitoring_starts_at' => $this->input('monitoring_starts_at') === ''
                 ? null
                 : $this->input('monitoring_starts_at'),

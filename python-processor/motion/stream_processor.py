@@ -31,6 +31,7 @@ class StreamProcessor:
         fps: int = 20,
         quiet_frames_to_stop: int = 32,
         pre_motion_buffer_frames: int | None = None,
+        recording_resolution_height: int | None = None,
         timezone: str = "UTC",
         capture_factory=cv2.VideoCapture,
     ) -> None:
@@ -48,6 +49,7 @@ class StreamProcessor:
         self.output_extension = output_extension.lstrip(".")
         self.fps = fps
         self.quiet_frames_to_stop = quiet_frames_to_stop
+        self.recording_resolution_height = recording_resolution_height
         self.capture_factory = capture_factory
 
         self.quiet_frame_count = 0
@@ -79,7 +81,7 @@ class StreamProcessor:
 
     def process_frame(self, frame) -> SavedClip | None:
         result = self.detector.process(frame)
-        self.clip_writer.update(result.processed_frame)
+        self.clip_writer.update(self._recording_frame(frame))
 
         if result.motion_detected:
             self.quiet_frame_count = 0
@@ -96,6 +98,25 @@ class StreamProcessor:
                 return self.finish_recording()
 
         return None
+
+    def _recording_frame(self, frame):
+        if self.recording_resolution_height is None:
+            return frame.copy()
+
+        height, width = frame.shape[:2]
+
+        if height == self.recording_resolution_height:
+            return frame.copy()
+
+        ratio = self.recording_resolution_height / height
+        resized_width = max(2, int(width * ratio))
+
+        if resized_width % 2:
+            resized_width += 1
+
+        dimensions = (resized_width, self.recording_resolution_height)
+
+        return cv2.resize(frame, dimensions, interpolation=cv2.INTER_AREA)
 
     def start_recording(self) -> Path:
         self.output_directory.mkdir(parents=True, exist_ok=True)
