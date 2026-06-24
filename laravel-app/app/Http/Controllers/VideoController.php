@@ -15,7 +15,8 @@ class VideoController extends Controller
             ->visibleTo($request->user())
             ->with('camera')
             ->latest()
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         return view('videos.index', [
             'videos' => $videos,
@@ -33,14 +34,14 @@ class VideoController extends Controller
         ]);
     }
 
-    public function destroy(Video $video): RedirectResponse
+    public function destroy(Request $request, Video $video): RedirectResponse
     {
         $this->authorize('delete', $video);
 
         $video->delete();
 
         return redirect()
-            ->route('videos.index')
+            ->route('videos.index', $request->only('page'))
             ->with('status', 'Video recording deleted successfully.');
     }
 }

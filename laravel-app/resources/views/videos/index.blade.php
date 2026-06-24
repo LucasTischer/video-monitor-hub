@@ -49,7 +49,7 @@
                                                         <circle cx="12" cy="12" r="3"/>
                                                     </svg>
                                                 </x-icon-link>
-                                                <form method="POST" action="{{ route('videos.destroy', $video) }}">
+                                                <form method="POST" action="{{ route('videos.destroy', ['video' => $video, 'page' => request('page')]) }}">
                                                     @csrf
                                                     @method('DELETE')
                                                     <x-icon-button :label="__('Delete recording')">
@@ -74,6 +74,12 @@
                             </tbody>
                         </table>
                     </div>
+
+                    @if ($videos->hasPages())
+                        <div class="mt-5">
+                            {{ $videos->links() }}
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
