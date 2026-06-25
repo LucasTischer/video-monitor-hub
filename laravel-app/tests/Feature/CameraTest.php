@@ -2,6 +2,8 @@
 
 use App\Models\Camera;
 use App\Models\User;
+use App\Models\Video;
+use Illuminate\Support\Carbon;
 
 test('guests cannot access cameras', function () {
     $this->get('/cameras')->assertRedirect('/login');
@@ -328,6 +330,118 @@ test('shared viewers can view but not update cameras', function () {
             'is_active' => '1',
         ])
         ->assertNotFound();
+});
+
+test('camera detail paginates video recordings ten per page', function () {
+    $user = User::factory()->create();
+    $otherUser = User::factory()->create();
+    $camera = Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Garage',
+        'stream_url' => 'http://camera.local/garage',
+        'is_active' => true,
+    ]);
+    $otherCamera = Camera::create([
+        'user_id' => $otherUser->id,
+        'name' => 'Private Office',
+        'stream_url' => 'http://camera.local/private',
+        'is_active' => true,
+    ]);
+    $baseTime = Carbon::parse('2026-06-24 12:00:00');
+
+    for ($index = 1; $index <= 11; $index++) {
+        Carbon::setTestNow($baseTime->copy()->addMinutes($index));
+
+        Video::create([
+            'camera_id' => $camera->id,
+            'filename' => sprintf('garage-motion-%02d.webm', $index),
+            'path' => sprintf('/storage/videos/garage-motion-%02d.webm', $index),
+            'started_at' => now(),
+        ]);
+    }
+
+    Carbon::setTestNow($baseTime->copy()->addMinutes(12));
+
+    Video::create([
+        'camera_id' => $otherCamera->id,
+        'filename' => 'private-office-motion.webm',
+        'path' => '/storage/videos/private-office-motion.webm',
+        'started_at' => now(),
+    ]);
+
+    Carbon::setTestNow();
+
+    $this->actingAs($user)
+        ->get("/cameras/{$camera->id}")
+        ->assertOk()
+        ->assertSee('garage-motion-11.webm')
+        ->assertSee('garage-motion-02.webm')
+        ->assertDontSee('garage-motion-01.webm')
+        ->assertDontSee('private-office-motion.webm');
+
+    $this->actingAs($user)
+        ->get("/cameras/{$camera->id}?page=2")
+        ->assertOk()
+        ->assertSee('garage-motion-01.webm')
+        ->assertDontSee('garage-motion-11.webm')
+        ->assertDontSee('private-office-motion.webm');
+});
+
+test('camera detail video actions show delete only when allowed', function () {
+    $owner = User::factory()->create();
+    $viewer = User::factory()->create();
+    $camera = Camera::create([
+        'user_id' => $owner->id,
+        'name' => 'Shared Entry',
+        'stream_url' => 'http://camera.local/shared-entry',
+        'is_active' => true,
+    ]);
+    Video::create([
+        'camera_id' => $camera->id,
+        'filename' => 'shared-entry-motion.webm',
+        'path' => '/storage/videos/shared-entry-motion.webm',
+    ]);
+
+    $camera->sharedUsers()->attach($viewer->id, [
+        'role' => 'viewer',
+    ]);
+
+    $this->actingAs($owner)
+        ->get("/cameras/{$camera->id}")
+        ->assertOk()
+        ->assertSee('View recording')
+        ->assertSee('Delete recording');
+
+    $this->actingAs($viewer)
+        ->get("/cameras/{$camera->id}")
+        ->assertOk()
+        ->assertSee('View recording')
+        ->assertDontSee('Delete recording');
+});
+
+test('deleting a video from camera detail redirects back to the same camera page', function () {
+    $user = User::factory()->create();
+    $camera = Camera::create([
+        'user_id' => $user->id,
+        'name' => 'Garage',
+        'stream_url' => 'http://camera.local/garage',
+        'is_active' => true,
+    ]);
+    $video = Video::create([
+        'camera_id' => $camera->id,
+        'filename' => 'garage-motion.webm',
+        'path' => '/storage/videos/garage-motion.webm',
+    ]);
+
+    $this->actingAs($user)
+        ->delete("/videos/{$video->id}?page=2", [
+            'redirect_to_camera' => '1',
+        ])
+        ->assertRedirect("/cameras/{$camera->id}?page=2");
+
+    $this->assertDatabaseMissing('videos', [
+        'id' => $video->id,
+    ]);
 });
 
 test('shared editors can update but not delete cameras', function () {

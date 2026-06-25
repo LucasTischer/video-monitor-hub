@@ -44,11 +44,16 @@ class CameraController extends Controller
 
         $camera->load([
             'sharedUsers' => fn ($query) => $query->orderBy('name'),
-            'videos' => fn ($query) => $query->latest(),
         ]);
+
+        $videos = $camera->videos()
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return view('cameras.show', [
             'camera' => $camera,
+            'videos' => $videos,
         ]);
     }
 

@@ -1,7 +1,7 @@
 @props(['label'])
 
 <a
-    {{ $attributes->merge(['class' => 'inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white']) }}
+    {{ $attributes->merge(['class' => 'inline-flex h-8 w-8 items-center justify-center rounded-md text-slate-400 transition hover:bg-slate-900 hover:text-slate-100 focus:outline-none focus:ring-2 focus:ring-cyan-400']) }}
     title="{{ $label }}"
     aria-label="{{ $label }}"
 >

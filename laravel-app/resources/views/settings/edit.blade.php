@@ -1,13 +1,17 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+        <h2 class="font-semibold text-xl text-white leading-tight">
             {{ __('Settings') }}
         </h2>
     </x-slot>
 
     <div class="py-8">
         <div class="max-w-3xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+            @if (session('status'))
+                <x-flash-message class="mb-6" :message="session('status')" />
+            @endif
+
+            <div class="bg-slate-900 overflow-hidden shadow-sm sm:rounded-lg">
                 <form method="POST" action="{{ route('settings.update') }}" class="p-6">
                     @csrf
                     @method('PATCH')
@@ -17,7 +21,7 @@
                         <select
                             id="timezone"
                             name="timezone"
-                            class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                            class="mt-1 block w-full rounded-md border-slate-700 bg-slate-950 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400"
                             required
                         >
                             @foreach ($timezones as $timezone)
@@ -29,7 +33,7 @@
                         <x-input-error class="mt-2" :messages="$errors->get('timezone')" />
                     </div>
 
-                    <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    <p class="mt-2 text-sm text-slate-400">
                         {{ __('Current app time: :time', ['time' => $currentTime->format('Y-m-d H:i')]) }}
                     </p>
 

@@ -44,7 +44,7 @@
     <select
         id="recording_retention_days"
         name="recording_retention_days"
-        class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+        class="mt-1 block w-full rounded-md border-slate-700 bg-slate-950 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400"
     >
         <option value="" @selected(old('recording_retention_days', $camera?->recording_retention_days) === null)>{{ __('Keep forever') }}</option>
         <option value="1" @selected((string) old('recording_retention_days', $camera?->recording_retention_days) === '1')>{{ __('1 day') }}</option>
@@ -62,7 +62,7 @@
         <select
             id="record_after_motion_seconds"
             name="record_after_motion_seconds"
-            class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            class="mt-1 block w-full rounded-md border-slate-700 bg-slate-950 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400"
         >
             @foreach ([1, 2, 5, 10, 30, 60] as $seconds)
                 <option
@@ -81,7 +81,7 @@
         <select
             id="pre_motion_buffer_seconds"
             name="pre_motion_buffer_seconds"
-            class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            class="mt-1 block w-full rounded-md border-slate-700 bg-slate-950 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400"
         >
             @foreach ([0, 1, 2, 5, 10, 30] as $seconds)
                 <option
@@ -102,7 +102,7 @@
         <select
             id="recording_resolution_height"
             name="recording_resolution_height"
-            class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            class="mt-1 block w-full rounded-md border-slate-700 bg-slate-950 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400"
         >
             <option value="" @selected(old('recording_resolution_height', $camera?->recording_resolution_height) === null)>{{ __('Original source') }}</option>
             @foreach ([480, 720, 1080] as $height)
@@ -122,7 +122,7 @@
         <select
             id="recording_fps"
             name="recording_fps"
-            class="mt-1 block w-full rounded-md border-slate-300 bg-white text-slate-900 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            class="mt-1 block w-full rounded-md border-slate-700 bg-slate-950 text-slate-100 shadow-sm focus:border-cyan-400 focus:ring-cyan-400"
         >
             @foreach ([5, 10, 15, 20, 30] as $fps)
                 <option
@@ -174,9 +174,9 @@
             type="checkbox"
             value="1"
             @checked(old('motion_detection_enabled', $camera?->motion_detection_enabled ?? true))
-            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
+            class="rounded border-slate-700 bg-slate-950 text-white shadow-sm focus:ring-cyan-400 focus:ring-offset-slate-950"
         >
-        <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Motion detection enabled') }}</span>
+        <span class="ms-2 text-sm text-slate-400">{{ __('Motion detection enabled') }}</span>
     </label>
     <x-input-error class="mt-2" :messages="$errors->get('motion_detection_enabled')" />
 </div>
@@ -189,9 +189,9 @@
             type="checkbox"
             value="1"
             @checked(old('is_active', $camera?->is_active ?? true))
-            class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:focus:ring-indigo-600 dark:focus:ring-offset-gray-800"
+            class="rounded border-slate-700 bg-slate-950 text-white shadow-sm focus:ring-cyan-400 focus:ring-offset-slate-950"
         >
-        <span class="ms-2 text-sm text-gray-600 dark:text-gray-400">{{ __('Active') }}</span>
+        <span class="ms-2 text-sm text-slate-400">{{ __('Active') }}</span>
     </label>
     <x-input-error class="mt-2" :messages="$errors->get('is_active')" />
 </div>

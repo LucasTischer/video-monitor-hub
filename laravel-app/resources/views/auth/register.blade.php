@@ -1,7 +1,7 @@
 <x-guest-layout>
     <div class="mb-6">
-        <h1 class="text-2xl font-semibold text-slate-900 dark:text-white">{{ __('Create your VMHub account') }}</h1>
-        <p class="mt-2 text-sm text-slate-600 dark:text-slate-400">{{ __('Start managing camera streams and motion recordings from a private dashboard.') }}</p>
+        <h1 class="text-2xl font-semibold text-white">{{ __('Create your VMHub account') }}</h1>
+        <p class="mt-2 text-sm text-slate-400">{{ __('Start managing camera streams and motion recordings from a private dashboard.') }}</p>
     </div>
 
     <form method="POST" action="{{ route('register') }}">
@@ -45,7 +45,7 @@
         </div>
 
         <div class="mt-6 flex items-center justify-between gap-4">
-            <a class="text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white" href="{{ route('login') }}">
+            <a class="text-sm text-slate-400 hover:text-slate-100" href="{{ route('login') }}">
                 {{ __('Already registered?') }}
             </a>
 

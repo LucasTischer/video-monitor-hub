@@ -3,6 +3,7 @@
 use App\Models\Camera;
 use App\Models\User;
 use App\Models\Video;
+use Illuminate\Support\Carbon;
 
 test('guests cannot access videos', function () {
     $this->get('/videos')->assertRedirect('/login');
@@ -110,13 +111,16 @@ test('video list is paginated with the latest visible recordings first', functio
         'stream_url' => 'http://camera.local/private',
         'is_active' => true,
     ]);
+    $baseTime = Carbon::parse('2026-06-24 12:00:00');
 
     for ($index = 1; $index <= 16; $index++) {
         Video::create([
             'camera_id' => $camera->id,
             'filename' => sprintf('front-gate-motion-%02d.webm', $index),
             'path' => sprintf('/storage/videos/front-gate-motion-%02d.webm', $index),
-            'started_at' => now()->subMinutes(16 - $index),
+            'started_at' => $baseTime->copy()->addMinutes($index),
+            'created_at' => $baseTime->copy()->addMinutes($index),
+            'updated_at' => $baseTime->copy()->addMinutes($index),
         ]);
     }
 
@@ -124,7 +128,9 @@ test('video list is paginated with the latest visible recordings first', functio
         'camera_id' => $otherCamera->id,
         'filename' => 'private-office-motion.webm',
         'path' => '/storage/videos/private-office-motion.webm',
-        'started_at' => now()->addMinute(),
+        'started_at' => $baseTime->copy()->addMinutes(17),
+        'created_at' => $baseTime->copy()->addMinutes(17),
+        'updated_at' => $baseTime->copy()->addMinutes(17),
     ]);
 
     $this->actingAs($user)
@@ -157,13 +163,16 @@ test('video list can show the second page of visible recordings', function () {
     $sharedCamera->sharedUsers()->attach($user->id, [
         'role' => 'viewer',
     ]);
+    $baseTime = Carbon::parse('2026-06-24 12:00:00');
 
     for ($index = 1; $index <= 15; $index++) {
         Video::create([
             'camera_id' => $camera->id,
             'filename' => sprintf('front-gate-motion-%02d.webm', $index),
             'path' => sprintf('/storage/videos/front-gate-motion-%02d.webm', $index),
-            'started_at' => now()->subMinutes(15 - $index),
+            'started_at' => $baseTime->copy()->addMinutes($index),
+            'created_at' => $baseTime->copy()->addMinutes($index),
+            'updated_at' => $baseTime->copy()->addMinutes($index),
         ]);
     }
 
@@ -171,7 +180,9 @@ test('video list can show the second page of visible recordings', function () {
         'camera_id' => $sharedCamera->id,
         'filename' => 'shared-lobby-motion.webm',
         'path' => '/storage/videos/shared-lobby-motion.webm',
-        'started_at' => now()->subHour(),
+        'started_at' => $baseTime,
+        'created_at' => $baseTime,
+        'updated_at' => $baseTime,
     ]);
 
     $this->actingAs($user)

@@ -25,12 +25,12 @@
                     @if (Route::has('login'))
                         <div class="flex items-center gap-2 text-sm">
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="rounded-md px-3 py-2 text-slate-300 transition hover:bg-white/10 hover:text-white">{{ __('Dashboard') }}</a>
+                                <a href="{{ url('/dashboard') }}" class="rounded-md px-3 py-2 text-slate-300 transition hover:bg-white/10 hover:text-slate-100">{{ __('Dashboard') }}</a>
                             @else
-                                <a href="{{ route('login') }}" class="rounded-md px-3 py-2 text-slate-300 transition hover:bg-white/10 hover:text-white">{{ __('Log in') }}</a>
+                                <a href="{{ route('login') }}" class="rounded-md px-3 py-2 text-slate-300 transition hover:bg-white/10 hover:text-slate-100">{{ __('Log in') }}</a>
 
                                 @if (Route::has('register'))
-                                    <a href="{{ route('register') }}" class="rounded-md border border-slate-700 px-3 py-2 text-slate-100 transition hover:border-cyan-300 hover:text-cyan-200">{{ __('Register') }}</a>
+                                    <a href="{{ route('register') }}" class="rounded-md border border-slate-700 px-3 py-2 text-slate-100 transition hover:border-cyan-300 hover:text-slate-100">{{ __('Register') }}</a>
                                 @endif
                             @endauth
                         </div>
@@ -39,7 +39,7 @@
 
                 <section class="grid flex-1 items-center gap-10 py-16 lg:grid-cols-[1fr_0.85fr]">
                     <div>
-                        <p class="text-sm font-medium uppercase tracking-wider text-cyan-300">Video Monitor Hub</p>
+                        <p class="text-sm font-medium uppercase tracking-wider text-white">Video Monitor Hub</p>
                         <h1 class="mt-4 max-w-3xl text-4xl font-semibold leading-tight sm:text-5xl">
                             Monitor cameras and review motion recordings from one focused dashboard.
                         </h1>
@@ -49,10 +49,10 @@
 
                         <div class="mt-8 flex flex-wrap items-center gap-3">
                             @auth
-                                <a href="{{ url('/dashboard') }}" class="rounded-md bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200">{{ __('Open dashboard') }}</a>
+                                <a href="{{ url('/dashboard') }}" class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200">{{ __('Open dashboard') }}</a>
                             @else
-                                <a href="{{ route('login') }}" class="rounded-md bg-cyan-300 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-cyan-200">{{ __('Log in') }}</a>
-                                <a href="{{ route('register') }}" class="rounded-md border border-slate-700 px-4 py-2 text-sm font-semibold text-white transition hover:border-cyan-300 hover:text-cyan-200">{{ __('Create account') }}</a>
+                                <a href="{{ route('login') }}" class="rounded-md bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-slate-200">{{ __('Log in') }}</a>
+                                <a href="{{ route('register') }}" class="rounded-md border border-slate-700 px-4 py-2 text-sm font-semibold text-white transition hover:border-cyan-300 hover:text-slate-100">{{ __('Create account') }}</a>
                             @endauth
                         </div>
                     </div>
@@ -69,7 +69,7 @@
                             </div>
                             <div class="rounded-md border border-slate-800 bg-slate-950 p-4">
                                 <p class="text-sm text-slate-400">{{ __('Processor') }}</p>
-                                <p class="mt-2 text-sm font-medium text-cyan-300">{{ __('Laravel API + Python/OpenCV') }}</p>
+                                <p class="mt-2 text-sm font-medium text-white">{{ __('Laravel API + Python/OpenCV') }}</p>
                             </div>
                         </div>
                     </div>

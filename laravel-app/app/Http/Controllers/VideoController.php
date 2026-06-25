@@ -38,7 +38,18 @@ class VideoController extends Controller
     {
         $this->authorize('delete', $video);
 
+        $camera = $video->camera;
+
         $video->delete();
+
+        if ($request->boolean('redirect_to_camera')) {
+            return redirect()
+                ->route('cameras.show', [
+                    'camera' => $camera,
+                    'page' => $request->query('page'),
+                ])
+                ->with('status', 'Video recording deleted successfully.');
+        }
 
         return redirect()
             ->route('videos.index', $request->only('page'))
